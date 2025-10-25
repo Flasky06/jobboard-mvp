@@ -23,6 +23,9 @@ class AuthController {
       $password = $_POST['password'];
       $confirm_password = $_POST['confirm_password'];
 
+      // Generate a default name from email
+      $name = explode('@', $email)[0];
+
       // Validation
       $errors = [];
       if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email is required.";
@@ -30,7 +33,7 @@ class AuthController {
       if ($password !== $confirm_password) $errors[] = "Passwords do not match.";
 
       if (empty($errors)) {
-        if ($this->user->register('', $email, $password)) {
+        if ($this->user->register($name, $email, $password)) {
           header("Location: login.php?registered=1");
           exit;
         } else {
@@ -66,14 +69,14 @@ class AuthController {
 
         if ($user) {
           // Check if email is verified
-          if (!$user['email_verified']) {
+          if (!$user['is_verified']) {
             $_SESSION['errors'] = ["Please verify your email before logging in. Check your inbox for the verification link."];
             redirect('login.php');
             return;
           }
 
           session_regenerate_id(true);
-          $_SESSION['user_id'] = $user['id'];
+          $_SESSION['user_id'] = $user['uuid'];
           $_SESSION['user_name'] = $user['name'] ?? $user['email'];
           $_SESSION['role'] = $user['role'];
 

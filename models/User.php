@@ -6,15 +6,23 @@ class User {
     $this->conn = $db;
   }
 
-  public function register($email, $password) {
+  public function register($name, $email, $password) {
     $hashed = password_hash($password, PASSWORD_BCRYPT);
-    $verificationToken = bin2hex(random_bytes(32));
+    $uuid = $this->generateUUID();
 
-    $stmt = $this->conn->prepare("INSERT INTO users (email, password, email_verification_token) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $email, $hashed, $verificationToken);
+    $stmt = $this->conn->prepare("INSERT INTO users (uuid, name, email, password) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $uuid, $name, $email, $hashed);
     $result = $stmt->execute();
 
     if ($result) {
+      // Create email verification token
+      $verificationToken = bin2hex(random_bytes(32));
+      $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+      $tokenStmt = $this->conn->prepare("INSERT INTO email_verifications (user_uuid, token, expires_at) VALUES (?, ?, ?)");
+      $tokenStmt->bind_param("sss", $uuid, $verificationToken, $expiresAt);
+      $tokenStmt->execute();
+
       // Send verification email
       require_once __DIR__ . '/../helpers/Mailer.php';
       $mailer = new Mailer();
@@ -25,7 +33,12 @@ class User {
   }
 
   public function verifyEmail($token) {
-    $stmt = $this->conn->prepare("UPDATE users SET email_verified = TRUE, email_verification_token = NULL WHERE email_verification_token = ?");
+    $stmt = $this->conn->prepare("
+      UPDATE users u
+      JOIN email_verifications ev ON u.uuid = ev.user_uuid
+      SET u.is_verified = TRUE, ev.is_used = TRUE
+      WHERE ev.token = ? AND ev.expires_at > NOW() AND ev.is_used = FALSE
+    ");
     $stmt->bind_param("s", $token);
     return $stmt->execute() && $stmt->affected_rows > 0;
   }
@@ -34,11 +47,24 @@ class User {
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-    $stmt = $this->conn->prepare("UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE email = ?");
-    $stmt->bind_param("sss", $token, $expires, $email);
+    // Get user uuid by email
+    $userStmt = $this->conn->prepare("SELECT uuid FROM users WHERE email = ?");
+    $userStmt->bind_param("s", $email);
+    $userStmt->execute();
+    $userResult = $userStmt->get_result();
+
+    if ($userResult->num_rows === 0) {
+      return false;
+    }
+
+    $user = $userResult->fetch_assoc();
+    $uuid = $user['uuid'];
+
+    $stmt = $this->conn->prepare("INSERT INTO password_resets (user_uuid, token, expires_at) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $uuid, $token, $expires);
     $result = $stmt->execute();
 
-    if ($result && $stmt->affected_rows > 0) {
+    if ($result) {
       // Send password reset email
       require_once __DIR__ . '/../helpers/Mailer.php';
       $mailer = new Mailer();
@@ -51,7 +77,11 @@ class User {
 
   public function resetPassword($token, $newPassword) {
     // First verify token is valid and not expired
-    $stmt = $this->conn->prepare("SELECT id FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()");
+    $stmt = $this->conn->prepare("
+      SELECT u.uuid FROM users u
+      JOIN password_resets pr ON u.uuid = pr.user_uuid
+      WHERE pr.token = ? AND pr.expires_at > NOW() AND pr.is_used = FALSE
+    ");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -61,30 +91,64 @@ class User {
     }
 
     $user = $result->fetch_assoc();
+    $uuid = $user['uuid'];
     $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
 
-    // Update password and clear reset token
-    $stmt = $this->conn->prepare("UPDATE users SET password = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?");
-    $stmt->bind_param("si", $hashedPassword, $user['id']);
-    return $stmt->execute();
+    // Update password and mark reset token as used
+    $this->conn->begin_transaction();
+
+    try {
+      $updateStmt = $this->conn->prepare("UPDATE users SET password = ? WHERE uuid = ?");
+      $updateStmt->bind_param("ss", $hashedPassword, $uuid);
+      $updateStmt->execute();
+
+      $tokenStmt = $this->conn->prepare("UPDATE password_resets SET is_used = TRUE WHERE token = ?");
+      $tokenStmt->bind_param("s", $token);
+      $tokenStmt->execute();
+
+      $this->conn->commit();
+      return true;
+    } catch (Exception $e) {
+      $this->conn->rollback();
+      return false;
+    }
   }
 
   public function getUserByVerificationToken($token) {
-    $stmt = $this->conn->prepare("SELECT * FROM users WHERE email_verification_token = ?");
+    $stmt = $this->conn->prepare("
+      SELECT u.* FROM users u
+      JOIN email_verifications ev ON u.uuid = ev.user_uuid
+      WHERE ev.token = ? AND ev.expires_at > NOW() AND ev.is_used = FALSE
+    ");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     return $stmt->get_result()->fetch_assoc();
   }
 
   public function getUserByResetToken($token) {
-    $stmt = $this->conn->prepare("SELECT * FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()");
+    $stmt = $this->conn->prepare("
+      SELECT u.* FROM users u
+      JOIN password_resets pr ON u.uuid = pr.user_uuid
+      WHERE pr.token = ? AND pr.expires_at > NOW() AND pr.is_used = FALSE
+    ");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     return $stmt->get_result()->fetch_assoc();
   }
 
+  private function generateUUID() {
+    return sprintf(
+      '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+      mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0x0fff) | 0x4000,
+      mt_rand(0, 0x3fff) | 0x8000,
+      mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+  }
+
   public function login($email, $password) {
-    $stmt = $this->conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt = $this->conn->prepare("SELECT uuid, name, email, password, role, is_verified FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -97,8 +161,8 @@ class User {
   }
 
   public function getUserById($userId) {
-    $stmt = $this->conn->prepare("SELECT * FROM users WHERE id = ?");
-    $stmt->bind_param("i", $userId);
+    $stmt = $this->conn->prepare("SELECT * FROM users WHERE uuid = ?");
+    $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     return $result->fetch_assoc();
@@ -123,9 +187,9 @@ class User {
     }
 
     $values[] = $userId;
-    $types .= 'i';
+    $types .= 's';
 
-    $sql = "UPDATE users SET " . implode(', ', $updates) . " WHERE id = ?";
+    $sql = "UPDATE users SET " . implode(', ', $updates) . " WHERE uuid = ?";
     $stmt = $this->conn->prepare($sql);
 
     $stmt->bind_param($types, ...$values);
@@ -134,14 +198,14 @@ class User {
 
   public function getUserProfile($userId) {
     $stmt = $this->conn->prepare("
-      SELECT u.*, jp.*, ep.*, ap.*
+      SELECT u.*, js.*, e.*, a.*
       FROM users u
-      LEFT JOIN jobseeker_profiles jp ON u.id = jp.user_id
-      LEFT JOIN employer_profiles ep ON u.id = ep.user_id
-      LEFT JOIN admin_profiles ap ON u.id = ap.user_id
-      WHERE u.id = ?
+      LEFT JOIN job_seekers js ON u.uuid = js.user_uuid
+      LEFT JOIN employers e ON u.uuid = e.user_uuid
+      LEFT JOIN admin_profiles a ON u.uuid = a.user_uuid
+      WHERE u.uuid = ?
     ");
-    $stmt->bind_param("i", $userId);
+    $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
     return $result->fetch_assoc();
@@ -149,14 +213,13 @@ class User {
 
   public function updateJobseekerProfile($userId, $data) {
     // Check if profile exists
-    $stmt = $this->conn->prepare("SELECT id FROM jobseeker_profiles WHERE user_id = ?");
-    $stmt->bind_param("i", $userId);
+    $stmt = $this->conn->prepare("SELECT id FROM job_seekers WHERE user_uuid = ?");
+    $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
 
     $allowedFields = [
-      'name', 'phone_number', 'gender', 'date_of_birth', 'nationality',
-      'professional_title', 'current_location', 'preferred_job_type', 'about_me', 'profile_photo'
+      'phone', 'gender', 'dob', 'location', 'bio', 'professional_title', 'skills'
     ];
 
     $updates = [];
@@ -178,14 +241,14 @@ class User {
     if ($result->num_rows > 0) {
       // Update existing profile
       $values[] = $userId;
-      $types .= 'i';
-      $sql = "UPDATE jobseeker_profiles SET " . implode(', ', $updates) . " WHERE user_id = ?";
+      $types .= 's';
+      $sql = "UPDATE job_seekers SET " . implode(', ', $updates) . " WHERE user_uuid = ?";
     } else {
       // Create new profile
-      $updates[] = "user_id = ?";
+      $updates[] = "user_uuid = ?";
       $values[] = $userId;
-      $types .= 'i';
-      $sql = "INSERT INTO jobseeker_profiles SET " . implode(', ', $updates);
+      $types .= 's';
+      $sql = "INSERT INTO job_seekers SET " . implode(', ', $updates);
     }
 
     $stmt = $this->conn->prepare($sql);
@@ -195,14 +258,13 @@ class User {
 
   public function updateEmployerProfile($userId, $data) {
     // Check if profile exists
-    $stmt = $this->conn->prepare("SELECT id FROM employer_profiles WHERE user_id = ?");
-    $stmt->bind_param("i", $userId);
+    $stmt = $this->conn->prepare("SELECT id FROM employers WHERE user_uuid = ?");
+    $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
 
     $allowedFields = [
-      'company_name', 'company_website', 'company_description',
-      'location', 'contact_number', 'company_logo'
+      'company_name', 'contact_number', 'position'
     ];
 
     $updates = [];
@@ -224,14 +286,14 @@ class User {
     if ($result->num_rows > 0) {
       // Update existing profile
       $values[] = $userId;
-      $types .= 'i';
-      $sql = "UPDATE employer_profiles SET " . implode(', ', $updates) . " WHERE user_id = ?";
+      $types .= 's';
+      $sql = "UPDATE employers SET " . implode(', ', $updates) . " WHERE user_uuid = ?";
     } else {
       // Create new profile
-      $updates[] = "user_id = ?";
+      $updates[] = "user_uuid = ?";
       $values[] = $userId;
-      $types .= 'i';
-      $sql = "INSERT INTO employer_profiles SET " . implode(', ', $updates);
+      $types .= 's';
+      $sql = "INSERT INTO employers SET " . implode(', ', $updates);
     }
 
     $stmt = $this->conn->prepare($sql);
@@ -241,8 +303,8 @@ class User {
 
   public function updateAdminProfile($userId, $data) {
     // Check if profile exists
-    $stmt = $this->conn->prepare("SELECT id FROM admin_profiles WHERE user_id = ?");
-    $stmt->bind_param("i", $userId);
+    $stmt = $this->conn->prepare("SELECT id FROM admin_profiles WHERE user_uuid = ?");
+    $stmt->bind_param("s", $userId);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -267,13 +329,13 @@ class User {
     if ($result->num_rows > 0) {
       // Update existing profile
       $values[] = $userId;
-      $types .= 'i';
-      $sql = "UPDATE admin_profiles SET " . implode(', ', $updates) . " WHERE user_id = ?";
+      $types .= 's';
+      $sql = "UPDATE admin_profiles SET " . implode(', ', $updates) . " WHERE user_uuid = ?";
     } else {
       // Create new profile
-      $updates[] = "user_id = ?";
+      $updates[] = "user_uuid = ?";
       $values[] = $userId;
-      $types .= 'i';
+      $types .= 's';
       $sql = "INSERT INTO admin_profiles SET " . implode(', ', $updates);
     }
 
@@ -283,38 +345,26 @@ class User {
   }
 
   public function getJobseekerSkills($profileId) {
-    $stmt = $this->conn->prepare("
-      SELECT s.name, s.category, js.proficiency_level
-      FROM jobseeker_skills js
-      JOIN skills s ON js.skill_id = s.id
-      WHERE js.jobseeker_profile_id = ?
-      ORDER BY s.category, s.name
-    ");
+    // Skills are stored as TEXT in job_seekers.skills
+    $stmt = $this->conn->prepare("SELECT skills FROM job_seekers WHERE id = ?");
     $stmt->bind_param("i", $profileId);
     $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result ? explode(',', $result['skills']) : [];
   }
 
   public function getJobseekerEducation($profileId) {
-    $stmt = $this->conn->prepare("
-      SELECT * FROM education
-      WHERE jobseeker_profile_id = ?
-      ORDER BY start_date DESC
-    ");
+    // Education is stored as TEXT in job_seekers.education
+    $stmt = $this->conn->prepare("SELECT education FROM job_seekers WHERE id = ?");
     $stmt->bind_param("i", $profileId);
     $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result ? explode("\n", $result['education']) : [];
   }
 
   public function getJobseekerExperience($profileId) {
-    $stmt = $this->conn->prepare("
-      SELECT * FROM work_experience
-      WHERE jobseeker_profile_id = ?
-      ORDER BY start_date DESC
-    ");
-    $stmt->bind_param("i", $profileId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // Experience is not in the current schema, return empty array
+    return [];
   }
 }
 ?>
