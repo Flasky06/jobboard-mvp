@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../controllers/AuthController.php';
-require_once __DIR__ . '/../helpers/session.php';
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../controllers/AuthController.php';
+require_once __DIR__ . '/../../helpers/session.php';
 
 $token = $_GET['token'] ?? '';
 
@@ -25,7 +25,7 @@ $auth = new AuthController($conn);
 $auth->resetPassword();
 
 $title = "Reset Password";
-include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
@@ -70,4 +70,4 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include __DIR__ . '/../../includes/footer.php'; ?>

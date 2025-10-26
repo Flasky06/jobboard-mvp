@@ -109,11 +109,11 @@ class Mailer {
     }
 
     private function getVerificationUrl($token) {
-        return "http://localhost/job%20finder/public/verify-email.php?token=" . urlencode($token);
+        return "http://localhost:8000/auth/verify-email.php?token=" . urlencode($token);
     }
 
     private function getPasswordResetUrl($token) {
-        return "http://localhost/job%20finder/public/reset-password.php?token=" . urlencode($token);
+        return "http://localhost:8000/auth/reset-password.php?token=" . urlencode($token);
     }
 }
 ?>

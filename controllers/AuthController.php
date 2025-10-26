@@ -15,13 +15,14 @@ class AuthController {
       // CSRF validation
       if (!isset($_POST['csrf_token']) || !validate_csrf_token($_POST['csrf_token'])) {
         $_SESSION['errors'] = ["Invalid request. Please try again."];
-        redirect('register.php');
+        redirect('auth/register.php');
         return;
       }
 
       $email = trim($_POST['email']);
       $password = $_POST['password'];
       $confirm_password = $_POST['confirm_password'];
+      $role = $_POST['role'] ?? 'jobseeker';
 
       // Generate a default name from email
       $name = explode('@', $email)[0];
@@ -31,10 +32,11 @@ class AuthController {
       if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email is required.";
       if (empty($password) || strlen($password) < 8) $errors[] = "Password must be at least 8 characters.";
       if ($password !== $confirm_password) $errors[] = "Passwords do not match.";
+      if (!in_array($role, ['jobseeker', 'employer'])) $errors[] = "Invalid user role selected.";
 
       if (empty($errors)) {
-        if ($this->user->register($name, $email, $password)) {
-          header("Location: login.php?registered=1");
+        if ($this->user->register($name, $email, $password, $role)) {
+          header("Location: auth/login.php?registered=1");
           exit;
         } else {
           $errors[] = "Error registering user. Email might already exist.";
@@ -43,7 +45,7 @@ class AuthController {
 
       // Store errors in session for display
       $_SESSION['errors'] = $errors;
-      redirect('register.php');
+      redirect('auth/register.php');
     }
   }
 
@@ -76,17 +78,15 @@ class AuthController {
           }
 
           session_regenerate_id(true);
-          $_SESSION['user_id'] = $user['uuid'];
-          $_SESSION['user_name'] = $user['name'] ?? $user['email'];
-          $_SESSION['role'] = $user['role'];
+          setUserSession($user);  // This sets all variations
 
           // Redirect based on user role
           switch ($user['role']) {
             case 'admin':
-              redirect('admin-dashboard.php');
+              redirect('dashboard/admin-dashboard.php');
               break;
             case 'employer':
-              redirect('employer-dashboard.php');
+              redirect('dashboard/employer-dashboard.php');
               break;
             case 'jobseeker':
             default:
@@ -189,7 +189,7 @@ class AuthController {
 
   public function logout() {
     session_destroy();
-    redirect('login.php');
+    redirect('auth/login.php');
   }
 }
 ?>

@@ -1,18 +1,5 @@
 <?php
 require_once __DIR__ . '/../helpers/session.php';
-
-// Determine which navbar to include based on user role
-$navbar_file = 'navbar.php'; // default for guests/job seekers
-if (isset($_SESSION['role'])) {
-    switch ($_SESSION['role']) {
-        case 'employer':
-            $navbar_file = 'employer-navbar.php';
-            break;
-        case 'admin':
-            $navbar_file = 'admin-navbar.php';
-            break;
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +7,7 @@ if (isset($_SESSION['role'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= isset($title) ? htmlspecialchars($title) : 'Job Portal' ?></title>
+    <title><?php echo isset($title) ? htmlspecialchars($title) : 'Job Portal - Employer'; ?></title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -30,5 +17,5 @@ if (isset($_SESSION['role'])) {
 
 <body class="bg-gray-50 text-gray-800">
 
-    <?php include __DIR__ . '/' . $navbar_file; ?>
+    <?php include __DIR__ . '/employer-navbar.php'; ?>
     <main class="container mx-auto p-4">

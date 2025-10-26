@@ -1,4 +1,4 @@
-# Job Finder Application
+# job-finder Application
 
 A PHP-based job portal application with user authentication, email verification, and role-based access control.
 
@@ -16,8 +16,8 @@ A PHP-based job portal application with user authentication, email verification,
 
 Place the project files in your web server's document root:
 
-- XAMPP: `C:\xampp\htdocs\job finder`
-- WAMP: `C:\wamp\www\job finder`
+- XAMPP: `C:\xampp\htdocs\job-finder`
+- WAMP: `C:\wamp\www\job-finder`
 
 ### 2. Install Dependencies
 
@@ -55,7 +55,7 @@ $this->Password = 'your-app-password'; // Use App Password, not regular password
 ### Option 1: Using PHP Built-in Server
 
 ```bash
-cd "C:\xampp\htdocs\job finder"
+cd "C:\xampp\htdocs\job-finder"
 php -S localhost:8000 -t public
 ```
 
@@ -64,13 +64,13 @@ Access at: http://localhost:8000
 ### Option 2: Using XAMPP
 
 1. Start Apache and MySQL from XAMPP control panel
-2. Access at: http://localhost/job%20finder/public/
+2. Access at: http://localhost/job-finder/public/
 
 ## Testing the Application
 
 ### 1. User Registration & Email Verification
 
-1. Navigate to `http://localhost:8000/register.php`
+1. Navigate to `http://localhost:8000/register`
 2. Fill out the registration form:
    - Name: Any name (e.g., "John Doe")
    - Email: A valid email address you can access
@@ -89,20 +89,20 @@ Access at: http://localhost:8000
 
 ### 2. User Login
 
-1. Go to `http://localhost:8000/login.php`
+1. Go to `http://localhost:8000/login`
 2. Enter your verified email and password
 3. Click "Login"
 
 **Expected Behavior:**
 
 - Successful login redirects based on user role:
-  - Job Seekers: `home.php`
-  - Employers: `employer-dashboard.php`
-  - Admins: `admin-dashboard.php`
+  - Job Seekers: `home`
+  - Employers: `employer-dashboard`
+  - Admins: `admin-dashboard`
 
 ### 3. Password Reset
 
-1. Go to `http://localhost:8000/forgot-password.php`
+1. Go to `http://localhost:8000/forgot-password`
 2. Enter your registered email
 3. Check email for reset link
 4. Click the reset link and follow instructions
@@ -119,7 +119,7 @@ UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';
 ## Application Structure
 
 ```
-job finder/
+job-finder/
 ├── config/
 │   └── db.php                 # Database configuration
 ├── controllers/

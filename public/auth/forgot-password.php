@@ -54,7 +54,7 @@ include __DIR__ . '/../includes/header.php';
 
     <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
-            Remember your password? <a href="login.php" class="text-blue-600 hover:text-blue-500">Login here</a>
+            Remember your password? <a href="auth/login.php" class="text-blue-600 hover:text-blue-500">Login here</a>
         </p>
     </div>
 </div>

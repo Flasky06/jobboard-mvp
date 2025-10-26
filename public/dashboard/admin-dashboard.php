@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../middleware/auth.php';
-require_once __DIR__ . '/../helpers/session.php';
+require_once __DIR__ . '/../../middleware/auth.php';
+require_once __DIR__ . '/../../helpers/session.php';
 
 // Check if user is admin
 if ($_SESSION['role'] !== 'admin') {
@@ -8,7 +8,7 @@ if ($_SESSION['role'] !== 'admin') {
 }
 
 $title = "Admin Dashboard";
-include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/../../includes/admin-header.php';
 ?>
 
 <div class="max-w-6xl mx-auto">
@@ -91,4 +91,4 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include __DIR__ . '/../../includes/footer.php'; ?>

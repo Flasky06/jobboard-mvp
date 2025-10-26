@@ -3,52 +3,30 @@
         <a href="/jobs.php" class="font-bold text-lg text-blue-700">Job Portal</a>
 
         <ul class="flex gap-4 items-center">
-            <?php if (isset($_SESSION['user_id'])): ?>
+            <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'employer'): ?>
             <?php
-            $dashboard_url = '/home.php'; // default for jobseekers
-            $profile_url = '/profile.php'; // default for jobseekers
-            if (isset($_SESSION['role'])) {
-                switch ($_SESSION['role']) {
-                    case 'employer':
-                        $dashboard_url = '/dashboard/employer-dashboard.php';
-                        $profile_url = '/dashboard/employer-profile.php';
-                        break;
-                    case 'admin':
-                        $dashboard_url = '/dashboard/admin-dashboard.php';
-                        $profile_url = '/dashboard/admin-profile.php';
-                        break;
-                }
-            }
+            $dashboard_url = '/dashboard/employer-dashboard.php'; // default for employers
+            $profile_url = '/dashboard/employer-profile.php'; // default for employers
             ?>
-            <li><a href="/jobs.php" class="hover:text-blue-600">Browse Jobs</a></li>
-            <li><a href="/home.php" class="hover:text-blue-600">Dashboard</a></li>
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'jobseeker'): ?>
-            <li><a href="/jobs/saved-jobs.php" class="hover:text-blue-600">Saved Jobs</a></li>
-            <?php endif; ?>
+            <li><a href="/dashboard/employer-dashboard.php" class="hover:text-blue-600">Dashboard</a></li>
+            <li><a href="/applications/applications.php" class="hover:text-blue-600">Applications</a></li>
+            <li><a href="/jobs/my-jobs.php" class="hover:text-blue-600">My Jobs</a></li>
+            <li><a href="/jobs/post-job.php" class="hover:text-blue-600">Post New Job</a></li>
             <li class="flex items-center space-x-2">
-                <span class="text-gray-500 text-sm">Hi, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
+                <span class="text-gray-500 text-sm">Hi, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>
+                    (Employer)</span>
                 <div class="relative">
                     <button id="profileDropdownBtn" class="flex items-center space-x-2 focus:outline-none">
                         <img src="<?php
                             // Get profile image based on role
-                            $profile_image = '/uploads/profile_photos/default-avatar.png'; // default
+                            $profile_image = '/uploads/company_logos/default-logo.png'; // default for employer
                             if (isset($_SESSION['role']) && isset($_SESSION['user_id'])) {
                                 require_once __DIR__ . '/../config/db.php';
                                 require_once __DIR__ . '/../models/User.php';
                                 $userModel = new User($conn);
                                 $profile = $userModel->getUserProfile($_SESSION['user_id']);
                                 if ($profile) {
-                                    switch ($_SESSION['role']) {
-                                        case 'jobseeker':
-                                            $profile_image = !empty($profile['profile_picture']) ? $profile['profile_picture'] : '/uploads/profile_photos/default-avatar.png';
-                                            break;
-                                        case 'employer':
-                                            $profile_image = !empty($profile['company_logo']) ? $profile['company_logo'] : '/uploads/company_logos/default-logo.png';
-                                            break;
-                                        case 'admin':
-                                            $profile_image = !empty($profile['admin_photo']) ? $profile['admin_photo'] : '/uploads/profile_photos/default-avatar.png';
-                                            break;
-                                    }
+                                    $profile_image = !empty($profile['company_logo']) ? $profile['company_logo'] : '/uploads/company_logos/default-logo.png';
                                 }
                             }
                             echo htmlspecialchars($profile_image);
