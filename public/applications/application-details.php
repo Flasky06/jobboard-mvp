@@ -1,9 +1,12 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../helpers/session.php';
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../controllers/JobController.php';
-require_once __DIR__ . '/../../controllers/ApllicationController.php';
+require_once __DIR__ . '/../../controllers/ApplicationController.php';
 
 // Check if user is employer
 if (!isEmployer()) {
@@ -11,7 +14,9 @@ if (!isEmployer()) {
 }
 
 $applicationId = $_GET['id'] ?? null;
+
 if (!$applicationId) {
+    $_SESSION['errors'] = ['Application ID is required'];
     header("Location: applications.php");
     exit;
 }
@@ -22,22 +27,26 @@ $userId = getUserId();
 $employer = $jobController->user->getUserProfile($userId);
 $employerUuid = $employer['employer_uuid'] ?? null;
 
-// Get application details
-$application = null;
-$job = null;
-$jobseeker = null;
-
-if ($employerUuid) {
-    // Get application details using ApplicationController
-    $application = $applicationController->getApplicationDetails($applicationId, $employerUuid);
-
-    if ($application) {
-        $job = $application['job'];
-        $jobseeker = $application['jobseeker'];
-    }
+if (!$employerUuid) {
+    $_SESSION['errors'] = ['Employer profile not found. Please complete your profile.'];
+    header("Location: applications.php");
+    exit;
 }
 
-if (!$application || !$job || !$jobseeker) {
+// Get application details
+$application = $applicationController->getApplicationDetails($applicationId, $employerUuid);
+
+if (!$application) {
+    $_SESSION['errors'] = ['Application not found or you do not have permission to view it'];
+    header("Location: applications.php");
+    exit;
+}
+
+$job = $application['job'] ?? null;
+$jobseeker = $application['jobseeker'] ?? null;
+
+if (!$job || !$jobseeker) {
+    $_SESSION['errors'] = ['Unable to load application details'];
     header("Location: applications.php");
     exit;
 }
@@ -62,6 +71,23 @@ include __DIR__ . '/../../includes/employer-header.php';
             </a>
         </div>
     </div>
+
+    <?php if (isset($_SESSION['success'])): ?>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+        <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['errors'])): ?>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <ul class="list-disc list-inside">
+            <?php foreach ($_SESSION['errors'] as $error): ?>
+            <li><?php echo htmlspecialchars($error); ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+    <?php unset($_SESSION['errors']); ?>
+    <?php endif; ?>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content -->
@@ -203,8 +229,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                         <p class="font-medium text-gray-900">Resume Document</p>
                         <p class="text-sm text-gray-500">Click to download</p>
                     </div>
-                    <a href="/uploads/resumes/<?php echo htmlspecialchars($application['resume_file']); ?>"
-                        target="_blank"
+                    <a href="<?php echo htmlspecialchars($application['resume_file']); ?>" target="_blank"
                         class="ml-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                         Download
                     </a>
@@ -253,11 +278,11 @@ include __DIR__ . '/../../includes/employer-header.php';
             <div class="bg-white rounded-xl shadow-md p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                 <div class="space-y-3">
-                    <a href="job-details.php?id=<?php echo $job['uuid']; ?>"
+                    <a href="../jobs/job-details.php?id=<?php echo $job['uuid']; ?>"
                         class="block w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-center">
                         View Job Details
                     </a>
-                    <a href="edit-job.php?id=<?php echo $job['uuid']; ?>"
+                    <a href="../jobs/edit-job.php?id=<?php echo $job['uuid']; ?>"
                         class="block w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition text-center">
                         Edit Job
                     </a>
