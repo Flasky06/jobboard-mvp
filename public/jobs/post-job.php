@@ -14,6 +14,13 @@ include __DIR__ . '/../../includes/employer-header.php';
 <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md mt-8">
     <h2 class="text-2xl font-bold mb-6 text-center">Post a New Job</h2>
 
+    <?php if (isset($_SESSION['success'])): ?>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <p><?php echo htmlspecialchars($_SESSION['success']); ?></p>
+    </div>
+    <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
     <?php if (isset($_SESSION['errors'])): ?>
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
         <ul class="list-disc list-inside">

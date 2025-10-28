@@ -57,12 +57,15 @@ class Application {
      */
     public function getApplicationById($applicationUuid) {
         $stmt = $this->conn->prepare("
-            SELECT a.*, jp.title as job_title, jp.employer_uuid, js.fullName, js.email, js.phone, js.location
+            SELECT a.*, jp.title as job_title, jp.employer_uuid, js.fullName, js.phone, js.location
             FROM applications a
             JOIN job_posts jp ON a.job_uuid = jp.uuid
             JOIN job_seekers js ON a.job_seeker_uuid = js.uuid
             WHERE a.uuid = ?
         ");
+        if (!$stmt) {
+            return false;
+        }
         $stmt->bind_param("s", $applicationUuid);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();

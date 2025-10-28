@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../helpers/session.php';
+require_once __DIR__ . '/../../helpers/csrf.php';  // ← ADD THIS LINE
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../controllers/JobController.php';
 require_once __DIR__ . '/../../controllers/ApplicationController.php';
@@ -33,20 +34,34 @@ if (!$employerUuid) {
     exit;
 }
 
-// Get application details
+// CRITICAL FIX: Pass $employerUuid to verify ownership
 $application = $applicationController->getApplicationDetails($applicationId, $employerUuid);
 
 if (!$application) {
+    // Debug logging
+    error_log("Failed to get application details:");
+    error_log("  Application ID: " . $applicationId);
+    error_log("  Employer UUID: " . $employerUuid);
+    
     $_SESSION['errors'] = ['Application not found or you do not have permission to view it'];
     header("Location: applications.php");
     exit;
 }
 
+// Get job and jobseeker details
 $job = $application['job'] ?? null;
 $jobseeker = $application['jobseeker'] ?? null;
 
+// Debug logging
+if (!$job) {
+    error_log("Job data missing from application");
+}
+if (!$jobseeker) {
+    error_log("Jobseeker data missing from application");
+}
+
 if (!$job || !$jobseeker) {
-    $_SESSION['errors'] = ['Unable to load application details'];
+    $_SESSION['errors'] = ['Unable to load application details. Missing job or jobseeker information.'];
     header("Location: applications.php");
     exit;
 }
@@ -89,23 +104,29 @@ include __DIR__ . '/../../includes/employer-header.php';
     <?php unset($_SESSION['errors']); ?>
     <?php endif; ?>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-4 md:space-y-6">
             <!-- Applicant Information -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Applicant Information</h2>
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+                <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Applicant Information</h2>
 
-                <div class="flex items-start gap-6 mb-6">
+                <div class="flex flex-col sm:flex-row items-start gap-4 md:gap-6 mb-4 md:mb-6">
                     <div
-                        class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                        class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg md:text-2xl self-center sm:self-start">
                         <?php echo strtoupper(substr($jobseeker['fullName'] ?? 'U', 0, 1)); ?>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                             <?php echo htmlspecialchars($jobseeker['fullName'] ?? 'Unknown Applicant'); ?>
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <?php if (!empty($jobseeker['professional_title'])): ?>
+                        <p class="text-sm md:text-base text-gray-600 mb-3">
+                            <?php echo htmlspecialchars($jobseeker['professional_title']); ?>
+                        </p>
+                        <?php endif; ?>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                             <?php if (!empty($jobseeker['email'])): ?>
                             <div class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
@@ -160,7 +181,7 @@ include __DIR__ . '/../../includes/employer-header.php';
 
                 <!-- Application Status -->
                 <div class="border-t pt-6">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
                         <div>
                             <h4 class="text-lg font-semibold text-gray-900 mb-2">Application Status</h4>
                             <?php
@@ -178,26 +199,21 @@ include __DIR__ . '/../../includes/employer-header.php';
                         </div>
 
                         <!-- Status Update Form -->
-                        <form method="post" action="update-application-status.php" class="flex items-center gap-3">
+                        <form method="post" action="update-application-status.php"
+                            class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mobile-btn-stack">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="application_id" value="<?php echo $application['uuid']; ?>">
                             <select name="status"
-                                class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                                 <option value="pending"
                                     <?php echo $application['status'] === 'pending' ? 'selected' : ''; ?>>Pending
                                 </option>
                                 <option value="reviewed"
                                     <?php echo $application['status'] === 'reviewed' ? 'selected' : ''; ?>>Reviewed
                                 </option>
-                                <option value="accepted"
-                                    <?php echo $application['status'] === 'accepted' ? 'selected' : ''; ?>>Accepted
-                                </option>
-                                <option value="rejected"
-                                    <?php echo $application['status'] === 'rejected' ? 'selected' : ''; ?>>Rejected
-                                </option>
                             </select>
                             <button type="submit"
-                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                class="bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2 rounded hover:bg-blue-700 transition text-sm font-medium mobile-btn-full">
                                 Update Status
                             </button>
                         </form>
@@ -229,19 +245,56 @@ include __DIR__ . '/../../includes/employer-header.php';
                         <p class="font-medium text-gray-900">Resume Document</p>
                         <p class="text-sm text-gray-500">Click to download</p>
                     </div>
-                    <a href="<?php echo htmlspecialchars($application['resume_file']); ?>" target="_blank"
+                    <a href="<?php echo htmlspecialchars($application['resume_file']); ?>" target="_blank" download
                         class="ml-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                         Download
                     </a>
                 </div>
             </div>
             <?php endif; ?>
+
+            <!-- Skills and Education (if available) -->
+            <?php if (!empty($jobseeker['skills']) || !empty($jobseeker['education'])): ?>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Additional Information</h2>
+
+                <?php if (!empty($jobseeker['skills'])): ?>
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Skills</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <?php 
+                        $skills = explode(',', $jobseeker['skills']);
+                        foreach ($skills as $skill): 
+                            $skill = trim($skill);
+                            if (!empty($skill)):
+                        ?>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                            <?php echo htmlspecialchars($skill); ?>
+                        </span>
+                        <?php 
+                            endif;
+                        endforeach; 
+                        ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($jobseeker['education'])): ?>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Education</h3>
+                    <div class="text-gray-700 whitespace-pre-wrap">
+                        <?php echo nl2br(htmlspecialchars($jobseeker['education'])); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Sidebar -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-1 mt-6 lg:mt-0">
             <!-- Job Information -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6 mb-4 md:mb-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Job Information</h3>
                 <dl class="space-y-3">
                     <div>
@@ -257,6 +310,12 @@ include __DIR__ . '/../../includes/employer-header.php';
                         <dd class="text-sm text-gray-900"><?php echo htmlspecialchars(ucfirst($job['job_type'])); ?>
                         </dd>
                     </div>
+                    <?php if (!empty($job['salary_range'])): ?>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Salary Range</dt>
+                        <dd class="text-sm text-gray-900"><?php echo htmlspecialchars($job['salary_range']); ?></dd>
+                    </div>
+                    <?php endif; ?>
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Posted Date</dt>
                         <dd class="text-sm text-gray-900"><?php echo date('M j, Y', strtotime($job['created_at'])); ?>
@@ -266,7 +325,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                         <dt class="text-sm font-medium text-gray-500">Status</dt>
                         <dd class="text-sm">
                             <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $job['status'] === 'open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
                                 <?php echo ucfirst($job['status']); ?>
                             </span>
                         </dd>
@@ -275,19 +334,23 @@ include __DIR__ . '/../../includes/employer-header.php';
             </div>
 
             <!-- Quick Actions -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                <div class="space-y-3">
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+                <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Quick Actions</h3>
+                <div class="space-y-2 md:space-y-3">
                     <a href="../jobs/job-details.php?id=<?php echo $job['uuid']; ?>"
-                        class="block w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-center">
+                        class="block w-full bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2 rounded hover:bg-blue-700 transition text-sm md:text-base text-center">
                         View Job Details
                     </a>
+                    <a href="../jobs/job-applications.php?id=<?php echo $job['uuid']; ?>"
+                        class="block w-full bg-purple-600 text-white px-3 py-2 md:px-4 md:py-2 rounded hover:bg-purple-700 transition text-sm md:text-base text-center">
+                        All Applications for this Job
+                    </a>
                     <a href="../jobs/edit-job.php?id=<?php echo $job['uuid']; ?>"
-                        class="block w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition text-center">
+                        class="block w-full bg-gray-600 text-white px-3 py-2 md:px-4 md:py-2 rounded hover:bg-gray-700 transition text-sm md:text-base text-center">
                         Edit Job
                     </a>
                     <a href="mailto:<?php echo htmlspecialchars($jobseeker['email']); ?>"
-                        class="block w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-center">
+                        class="block w-full bg-green-600 text-white px-3 py-2 md:px-4 md:py-2 rounded hover:bg-green-700 transition text-sm md:text-base text-center">
                         Contact Applicant
                     </a>
                 </div>

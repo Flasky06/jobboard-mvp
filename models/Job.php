@@ -14,19 +14,25 @@ class Job {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
+        $job_level = $data['job_level'] ?? null;
+        $job_type = $data['job_type'] ?? null;
+        $industry = $data['industry'] ?? null;
+        $additional_information = $data['additional_information'] ?? null;
+        $application_deadline = $data['application_deadline'] ?? null;
+
         $stmt->bind_param("ssssssssssss",
             $jobUuid,
             $employerUuid,
             $data['title'],
-            $data['job_level'] ?? null,
+            $job_level,
             $data['job_description'],
-            $data['job_type'] ?? null,
-            $data['industry'] ?? null,
+            $job_type,
+            $industry,
             $data['location'],
             $data['salary_range'],
-            $data['additional_information'] ?? null,
+            $additional_information,
             $data['requirements_qualifications'],
-            $data['application_deadline'] ?? null
+            $application_deadline
         );
 
         return $stmt->execute();

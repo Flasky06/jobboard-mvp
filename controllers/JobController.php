@@ -70,9 +70,6 @@ class JobController {
 
                     if ($this->job->createJob($employerUuid, $jobData)) {
                         $_SESSION['success'] = "Job posted successfully!";
-                        header("Location: /employer/jobs.php");
-                        exit;
-                        exit;
                     } else {
                         $errors[] = "Failed to post job. Please try again.";
                     }

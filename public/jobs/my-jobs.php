@@ -102,6 +102,10 @@ include __DIR__ . '/../../includes/employer-header.php';
                         class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         View
                     </a>
+                    <a href="job-applications.php?id=<?php echo $job['uuid']; ?>"
+                        class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        View Applications
+                    </a>
                     <a href="edit-job.php?id=<?php echo $job['uuid']; ?>"
                         class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
                         Edit

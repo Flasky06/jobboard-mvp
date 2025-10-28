@@ -176,14 +176,8 @@ include __DIR__ . '/../includes/header.php';
             class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
             <h3 class="font-semibold text-gray-900">Product & Project Management</h3>
         </a>
-        <a href="home.php?search=Estate+Agents+%26+Property+Management"
-            class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
-            <h3 class="font-semibold text-gray-900">Estate Agents & Property Management</h3>
-        </a>
-        <a href="home.php?search=Quality+Control+%26+Assurance"
-            class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
-            <h3 class="font-semibold text-gray-900">Quality Control & Assurance</h3>
-        </a>
+
+
         <a href="home.php?search=Human+Resources"
             class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
             <h3 class="font-semibold text-gray-900">Human Resources</h3>
@@ -204,18 +198,7 @@ include __DIR__ . '/../includes/header.php';
             class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
             <h3 class="font-semibold text-gray-900">Supply Chain & Procurement</h3>
         </a>
-        <a href="home.php?search=Research%2C+Teaching+%26+Training"
-            class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
-            <h3 class="font-semibold text-gray-900">Research, Teaching & Training</h3>
-        </a>
-        <a href="home.php?search=Trades+%26+Services"
-            class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
-            <h3 class="font-semibold text-gray-900">Trades & Services</h3>
-        </a>
-        <a href="home.php?search=Driver+%26+Transport+Services"
-            class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
-            <h3 class="font-semibold text-gray-900">Driver & Transport Services</h3>
-        </a>
+
         <a href="home.php?search=Health+%26+Safety"
             class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center hover:bg-gray-50">
             <h3 class="font-semibold text-gray-900">Health & Safety</h3>

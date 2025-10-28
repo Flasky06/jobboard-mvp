@@ -19,7 +19,7 @@ if (!$job) {
 $canEdit = false;
 if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'employer') {
     $employer = $jobController->user->getUserProfile($_SESSION['user_id']);
-    if ($employer && isset($employer['uuid']) && $employer['uuid'] === $job['employer_uuid']) {
+    if ($employer && isset($employer['employer_uuid']) && $employer['employer_uuid'] === $job['employer_uuid']) {
         $canEdit = true;
     }
 }
@@ -28,6 +28,66 @@ if (!$canEdit) {
     header("Location: ../index.php");
     exit;
 }
+
+// ===== HANDLE FORM SUBMISSION =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify CSRF token
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $_SESSION['errors'] = ['Invalid security token. Please try again.'];
+        header("Location: edit-job.php?id=" . $jobId);
+        exit;
+    }
+
+    // Collect form data
+    $jobData = [
+        'title' => trim($_POST['title'] ?? ''),
+        'job_level' => trim($_POST['job_level'] ?? ''),
+        'job_type' => trim($_POST['job_type'] ?? ''),
+        'industry' => trim($_POST['industry'] ?? ''),
+        'location' => trim($_POST['location'] ?? ''),
+        'salary_range' => trim($_POST['salary_range'] ?? ''),
+        'application_deadline' => !empty($_POST['application_deadline']) ? $_POST['application_deadline'] : null,
+        'job_description' => trim($_POST['job_description'] ?? ''),
+        'requirements_qualifications' => trim($_POST['requirements_qualifications'] ?? ''),
+        'additional_information' => trim($_POST['additional_information'] ?? '')
+    ];
+
+    // Validate required fields
+    $errors = [];
+    if (empty($jobData['title'])) {
+        $errors[] = 'Job title is required';
+    }
+    if (empty($jobData['job_type'])) {
+        $errors[] = 'Job type is required';
+    }
+    if (empty($jobData['location'])) {
+        $errors[] = 'Location is required';
+    }
+    if (empty($jobData['job_description'])) {
+        $errors[] = 'Job description is required';
+    }
+    if (empty($jobData['requirements_qualifications'])) {
+        $errors[] = 'Requirements and qualifications are required';
+    }
+
+    if (!empty($errors)) {
+        $_SESSION['errors'] = $errors;
+        header("Location: edit-job.php?id=" . $jobId);
+        exit;
+    }
+
+    // Update the job using the correct method signature (3 parameters)
+    if ($jobController->job->updateJob($jobId, $employer['employer_uuid'], $jobData)) {
+        $_SESSION['success'] = 'Job updated successfully!';
+        header("Location: view-jobs.php");
+        exit;
+    } else {
+        $_SESSION['errors'] = ['Failed to update job. Please try again.'];
+        header("Location: edit-job.php?id=" . $jobId);
+        exit;
+    }
+}
+// ===== END OF POST HANDLING =====
 
 $title = "Edit Job - " . htmlspecialchars($job['title']);
 include __DIR__ . '/../../includes/employer-header.php';
@@ -40,13 +100,13 @@ include __DIR__ . '/../../includes/employer-header.php';
 
         <?php if (isset($_SESSION['success'])): ?>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
+            <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
         </div>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['errors'])): ?>
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <ul>
+            <ul class="list-disc list-inside">
                 <?php foreach ($_SESSION['errors'] as $error): ?>
                 <li><?php echo htmlspecialchars($error); ?></li>
                 <?php endforeach; ?>
@@ -55,8 +115,8 @@ include __DIR__ . '/../../includes/employer-header.php';
         </div>
         <?php endif; ?>
 
-        <form action="edit-job.php?id=<?php echo $job['uuid']; ?>" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
+        <form action="edit-job.php?id=<?php echo $job['uuid']; ?>" method="POST">
+            <?php echo csrf_field(); ?>
 
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
@@ -173,7 +233,7 @@ include __DIR__ . '/../../includes/employer-header.php';
             </div>
 
             <div class="flex justify-end space-x-4 mt-6">
-                <a href="job-details.php?id=<?php echo $job['uuid']; ?>"
+                <a href="view-jobs.php"
                     class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition">Cancel</a>
                 <button type="submit"
                     class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">Update Job</button>

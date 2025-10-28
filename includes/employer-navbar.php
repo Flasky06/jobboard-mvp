@@ -1,6 +1,6 @@
 <nav class="bg-white shadow mb-6">
     <div class="container mx-auto flex justify-between items-center p-4">
-        <a href="/jobs.php" class="font-bold text-lg text-blue-700">Job Portal</a>
+        <a href="/dashboard/employer-dashboard.php" class="font-bold text-lg text-blue-700">Job Portal</a>
 
         <ul class="flex gap-4 items-center">
             <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'employer'): ?>
@@ -8,13 +8,12 @@
             $dashboard_url = '/dashboard/employer-dashboard.php'; // default for employers
             $profile_url = '/dashboard/employer-profile.php'; // default for employers
             ?>
-            <li><a href="/dashboard/employer-dashboard.php" class="hover:text-blue-600">Dashboard</a></li>
+            <li><a href="/dashboard/employer-dashboard.php" class="hover:text-blue-600">Home</a></li>
             <li><a href="/applications/applications.php" class="hover:text-blue-600">Applications</a></li>
             <li><a href="/jobs/my-jobs.php" class="hover:text-blue-600">My Jobs</a></li>
             <li><a href="/jobs/post-job.php" class="hover:text-blue-600">Post New Job</a></li>
             <li class="flex items-center space-x-2">
-                <span class="text-gray-500 text-sm">Hi, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>
-                    (Employer)</span>
+
                 <div class="relative">
                     <button id="profileDropdownBtn" class="flex items-center space-x-2 focus:outline-none">
                         <img src="<?php

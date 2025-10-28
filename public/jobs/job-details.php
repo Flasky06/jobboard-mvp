@@ -1,10 +1,12 @@
 <?php
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../controllers/JobController.php';
+require_once __DIR__ . '/../../controllers/ApplicationController.php';
 require_once __DIR__ . '/../../helpers/session.php';
 require_once __DIR__ . '/../../helpers/csrf.php';
 
 $jobController = new JobController($conn);
+$applicationController = new ApplicationController($conn);
 
 $jobId = $_GET['id'] ?? 0;
 $job = $jobController->job->getJobById($jobId);
@@ -31,7 +33,7 @@ if ($canApply) {
         $jobseekerUuid = $jobseeker['jobseeker_uuid'] ?? null;
         
         if ($jobseekerUuid) {
-            $application = $jobController->checkApplicationStatus($jobId, $jobseekerUuid);
+            $application = $applicationController->checkApplicationStatus($jobId, $jobseekerUuid);
             if ($application) {
                 $hasApplied = true;
             }
@@ -199,7 +201,7 @@ include __DIR__ . '/../../includes/header.php';
                 <?php endif; ?>
 
                 <?php if ($canApply && !$hasApplied): ?>
-                <a href="apply-job.php?id=<?php echo $job['uuid']; ?>"
+                <a href="../applications/apply-job.php?id=<?php echo $job['uuid']; ?>"
                     class="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-center block mb-4">
                     Apply for this Job
                 </a>

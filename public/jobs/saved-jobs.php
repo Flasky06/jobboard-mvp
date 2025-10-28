@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/../middleware/auth.php';
-require_once __DIR__ . '/../helpers/session.php';
-require_once __DIR__ . '/../controllers/JobController.php';
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../middleware/auth.php';
+require_once __DIR__ . '/../../helpers/session.php';
+require_once __DIR__ . '/../../helpers/csrf.php';
+require_once __DIR__ . '/../../controllers/JobController.php';
+require_once __DIR__ . '/../../config/db.php';
 
 // FIX: Use helper functions
 if (!isAuthenticated() || !isJobSeeker()) {
@@ -30,7 +31,7 @@ if (!$jobseekerUuid) {
 $savedJobs = $jobController->job->getSavedJobs($jobseekerUuid);
 
 $title = "My Saved Jobs";
-include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-6xl mx-auto">
@@ -124,11 +125,11 @@ include __DIR__ . '/../includes/header.php';
                             class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                             Unsave
                         </button>
-                        <a href="employer/job-details.php?id=<?php echo $job['uuid']; ?>"
+                        <a href="job-details.php?id=<?php echo $job['uuid']; ?>"
                             class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             View Details
                         </a>
-                        <a href="employer/apply-job.php?id=<?php echo $job['uuid']; ?>"
+                        <a href="../applications/apply-job.php?id=<?php echo $job['uuid']; ?>"
                             class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                             Apply Now
                         </a>
@@ -187,4 +188,4 @@ function unsaveJob(jobUuid, jobCard) {
 }
 </script>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include __DIR__ . '/../../includes/footer.php'; ?>

@@ -2,7 +2,9 @@
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../controllers/JobController.php';
 require_once __DIR__ . '/../helpers/session.php';
+require_once __DIR__ . '/../helpers/csrf.php';
 
+// No authentication required for home page - job seekers can browse jobs without logging in
 $jobController = new JobController($conn);
 
 // Get all jobs for job seekers with filters
@@ -102,10 +104,9 @@ include __DIR__ . '/../includes/header.php';
     <div class="space-y-4">
         <?php foreach ($jobs as $job): ?>
         <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-            onclick="window.location.href='employer/job-details.php?id=<?php echo $job['uuid']; ?>'">
+            onclick="window.location.href='jobs/job-details.php?id=<?php echo $job['uuid']; ?>'">
             <div class="flex justify-between items-start">
-                <div class="flex-1 cursor-pointer"
-                    onclick="window.location.href='employer/job-details.php?id=<?php echo $job['uuid']; ?>'">
+                <div class="flex-1 cursor-pointer">
                     <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
                         <?php echo htmlspecialchars($job['title']); ?>
                     </h3>

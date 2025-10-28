@@ -1,12 +1,12 @@
 <nav class="bg-white shadow mb-6">
     <div class="container mx-auto flex justify-between items-center p-4">
-        <a href="/jobs.php" class="font-bold text-lg text-blue-700">Job Portal</a>
+        <a href="/home.php" class="font-bold text-lg text-blue-700">Job Portal</a>
 
         <ul class="flex gap-4 items-center">
             <?php if (isset($_SESSION['user_id'])): ?>
             <?php
-            $dashboard_url = '/home.php'; // default for jobseekers
-            $profile_url = '/profile.php'; // default for jobseekers
+            $dashboard_url = '/home.php'; 
+            $profile_url = '/profile.php'; 
             if (isset($_SESSION['role'])) {
                 switch ($_SESSION['role']) {
                     case 'employer':
@@ -20,18 +20,17 @@
                 }
             }
             ?>
-            <li><a href="/jobs.php" class="hover:text-blue-600">Browse Jobs</a></li>
-            <li><a href="/home.php" class="hover:text-blue-600">Dashboard</a></li>
+            <li><a href="/home.php" class="hover:text-blue-600">Home</a></li>
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'jobseeker'): ?>
             <li><a href="/jobs/saved-jobs.php" class="hover:text-blue-600">Saved Jobs</a></li>
             <?php endif; ?>
             <li class="flex items-center space-x-2">
-                <span class="text-gray-500 text-sm">Hi, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
+
                 <div class="relative">
                     <button id="profileDropdownBtn" class="flex items-center space-x-2 focus:outline-none">
                         <img src="<?php
                             // Get profile image based on role
-                            $profile_image = '/uploads/profile_photos/default-avatar.png'; // default
+                            $profile_image = '/uploads/profile_photos/default-avatar.png'; 
                             if (isset($_SESSION['role']) && isset($_SESSION['user_id'])) {
                                 require_once __DIR__ . '/../config/db.php';
                                 require_once __DIR__ . '/../models/User.php';

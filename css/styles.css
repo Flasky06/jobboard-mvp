@@ -501,7 +501,40 @@ a:hover {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  /* Tablet styles */
+  .container {
+    padding: 0 var(--spacing-3);
+  }
+
+  .max-w-6xl {
+    max-width: 100%;
+  }
+
+  .max-w-4xl {
+    max-width: 100%;
+  }
+
+  .max-w-2xl {
+    max-width: 100%;
+  }
+
+  /* Grid layouts for tablets */
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
+  /* Mobile styles */
   .container {
     padding: 0 var(--spacing-2);
   }
@@ -521,11 +554,91 @@ a:hover {
     font-size: 0.75rem;
   }
 
-  .md\:grid-cols-2 {
+  /* Single column layouts for mobile */
+  .lg\:grid-cols-3,
+  .md\:grid-cols-2,
+  .md\:grid-cols-3 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 
-  .md\:grid-cols-3 {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+  /* Mobile-specific adjustments */
+  .flex-col-mobile {
+    flex-direction: column;
+  }
+
+  .gap-4-mobile {
+    gap: var(--spacing-2);
+  }
+
+  .text-center-mobile {
+    text-align: center;
+  }
+
+  .w-full-mobile {
+    width: 100%;
+  }
+
+  /* Mobile navigation adjustments */
+  .mobile-stack {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mobile-full-width {
+    width: 100%;
+  }
+
+  /* Mobile card adjustments */
+  .mobile-p-4 {
+    padding: var(--spacing-2);
+  }
+
+  .mobile-mb-4 {
+    margin-bottom: var(--spacing-2);
+  }
+
+  /* Mobile form adjustments */
+  .mobile-form-spacing {
+    margin-bottom: var(--spacing-3);
+  }
+
+  /* Mobile button adjustments */
+  .mobile-btn-stack {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .mobile-btn-full {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small mobile styles */
+  .container {
+    padding: 0 var(--spacing-1);
+  }
+
+  h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  h2 {
+    font-size: var(--font-size-xl);
+  }
+
+  h3 {
+    font-size: var(--font-size-lg);
+  }
+
+  .btn {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.7rem;
+  }
+
+  /* Extra small spacing adjustments */
+  .mobile-xs-spacing {
+    padding: var(--spacing-1);
+    margin-bottom: var(--spacing-1);
   }
 }

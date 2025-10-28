@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../helpers/session.php';
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../controllers/JobController.php';
-require_once __DIR__ . '/../../controllers/ApllicationController.php';
+require_once __DIR__ . '/../../controllers/ApplicationController.php';
 
 // Check if user is employer
 if (!isEmployer()) {
@@ -253,7 +253,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                                 <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $statusColor; ?>">
                                     <?php echo ucfirst($app['status']); ?>
                                 </span>
-                                <a href="/applications/application-details?id=<?php echo $app['uuid']; ?>"
+                                <a href="/applications/application-details.php?id=<?php echo $app['uuid']; ?>"
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                                     View Details
                                 </a>
