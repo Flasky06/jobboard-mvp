@@ -240,7 +240,3 @@ class ApplicationController {
         return false;
     }
 }
-
-// ============================================
-// END OF ApplicationController.php
-// ============================================

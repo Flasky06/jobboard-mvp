@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // ===== END OF POST HANDLING =====
 
 $title = "Edit Job - " . htmlspecialchars($job['title']);
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-4xl mx-auto">

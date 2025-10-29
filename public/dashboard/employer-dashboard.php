@@ -48,7 +48,7 @@ if ($employerUuid) {
 $companyName = $employer['company_name'] ?? 'Your Company';
 
 $title = "Employer Dashboard";
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -153,7 +153,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                         class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg text-center font-semibold">
                         Post New Job
                     </a>
-                    <a href="/jobs/jobs.php"
+                    <a href="/index.php"
                         class="block w-full bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-lg hover:border-blue-500 hover:text-blue-600 transition-all duration-200 text-center font-semibold">
                         Manage Jobs
                     </a>

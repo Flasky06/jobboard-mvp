@@ -146,7 +146,7 @@ include __DIR__ . '/../../includes/header.php';
         <div class="mb-4 md:mb-6">
             <label for="cover_letter" class="block text-sm font-medium text-gray-700 mb-2">Cover Letter *</label>
             <textarea name="cover_letter" id="cover_letter" rows="6 md:rows-8" required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                class="tinymce-basic w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
                 placeholder="Tell us why you're interested in this position and what makes you a good fit..."></textarea>
         </div>
 

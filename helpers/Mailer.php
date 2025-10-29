@@ -10,17 +10,28 @@ class Mailer {
     public function __construct() {
         $this->mailer = new PHPMailer(true);
 
+        // Load environment variables
+        $envFile = __DIR__ . '/../.env';
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                if (strpos(trim($line), '#') === 0) continue;
+                list($name, $value) = explode('=', $line, 2);
+                $_ENV[trim($name)] = trim($value);
+            }
+        }
+
         // Server settings
         $this->mailer->isSMTP();
-        $this->mailer->Host = 'smtp.gmail.com';
+        $this->mailer->Host = $_ENV['SMTP_HOST'] ?? 'smtp.gmail.com';
         $this->mailer->SMTPAuth = true;
-        $this->mailer->Username = 'alex987morgan@gmail.com';
-        $this->mailer->Password = 'dgrtuuuzqmpozwgn';
+        $this->mailer->Username = $_ENV['SMTP_USER'] ?? '';
+        $this->mailer->Password = $_ENV['SMTP_PASS'] ?? '';
         $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $this->mailer->Port = 587;
+        $this->mailer->Port = $_ENV['SMTP_PORT'] ?? 587;
 
         // Default settings
-        $this->mailer->setFrom('noreply@yourdomain.com', 'Job Portal');
+        $this->mailer->setFrom($_ENV['SMTP_FROM_EMAIL'] ?? 'noreply@yourdomain.com', $_ENV['SMTP_FROM_NAME'] ?? 'LSS Systems');
         $this->mailer->isHTML(true);
     }
 
@@ -29,7 +40,7 @@ class Mailer {
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($email);
 
-            $this->mailer->Subject = 'Verify Your Email - Job Portal';
+            $this->mailer->Subject = 'Verify Your Email - LSS Systems';
             $this->mailer->Body = $this->getVerificationEmailTemplate($token);
             $this->mailer->AltBody = 'Please verify your email by clicking the link: ' . $this->getVerificationUrl($token);
 
@@ -46,7 +57,7 @@ class Mailer {
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($email);
 
-            $this->mailer->Subject = 'Reset Your Password - Job Portal';
+            $this->mailer->Subject = 'Reset Your Password - LSS Systems';
             $this->mailer->Body = $this->getPasswordResetEmailTemplate($token);
             $this->mailer->AltBody = 'Reset your password by clicking the link: ' . $this->getPasswordResetUrl($token);
 
@@ -69,7 +80,7 @@ class Mailer {
         </head>
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                <h2 style='color: #2563eb;'>Welcome to Job Portal!</h2>
+                <h2 style='color: #2563eb;'>Welcome to LSS Systems!</h2>
                 <p>Thank you for registering. Please verify your email address to complete your registration.</p>
                 <div style='text-align: center; margin: 30px 0;'>
                     <a href='{$url}' style='background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;'>Verify Email</a>
@@ -95,7 +106,7 @@ class Mailer {
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
                 <h2 style='color: #2563eb;'>Reset Your Password</h2>
-                <p>You requested a password reset for your Job Portal account.</p>
+                <p>You requested a password reset for your LSS Systems account.</p>
                 <div style='text-align: center; margin: 30px 0;'>
                     <a href='{$url}' style='background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;'>Reset Password</a>
                 </div>
@@ -109,11 +120,13 @@ class Mailer {
     }
 
     private function getVerificationUrl($token) {
-        return "http://localhost:8000/auth/verify-email.php?token=" . urlencode($token);
+        $baseUrl = $_ENV['APP_URL'] ?? 'http://localhost:8000';
+        return "$baseUrl/auth/verify-email.php?token=" . urlencode($token);
     }
 
     private function getPasswordResetUrl($token) {
-        return "http://localhost:8000/auth/reset-password.php?token=" . urlencode($token);
+        $baseUrl = $_ENV['APP_URL'] ?? 'http://localhost:8000';
+        return "$baseUrl/auth/reset-password.php?token=" . urlencode($token);
     }
 }
 ?>

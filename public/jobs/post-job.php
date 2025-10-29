@@ -8,7 +8,7 @@ $jobController = new JobController($conn);
 $jobController->postJob();
 
 $title = "Post a Job";
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md mt-8">
@@ -45,7 +45,7 @@ include __DIR__ . '/../../includes/employer-header.php';
         <div>
             <label for="job_description" class="block text-sm font-medium text-gray-700">Job Description *</label>
             <textarea id="job_description" name="job_description" rows="6" required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                class="tinymce-advanced mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Describe the job responsibilities, requirements, and what the candidate will be doing..."></textarea>
         </div>
 
@@ -115,7 +115,7 @@ include __DIR__ . '/../../includes/employer-header.php';
             <label for="requirements_qualifications" class="block text-sm font-medium text-gray-700">Requirements &
                 Qualifications *</label>
             <textarea id="requirements_qualifications" name="requirements_qualifications" rows="4" required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                class="tinymce-basic mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="List the required skills, experience, qualifications, etc."></textarea>
         </div>
 
@@ -123,7 +123,7 @@ include __DIR__ . '/../../includes/employer-header.php';
             <label for="additional_information" class="block text-sm font-medium text-gray-700">Additional
                 Information</label>
             <textarea id="additional_information" name="additional_information" rows="3"
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                class="tinymce-basic mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Any additional information about the job, company culture, benefits, etc."></textarea>
         </div>
 
@@ -139,7 +139,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                 class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Post Job
             </button>
-            <a href="jobs.php"
+            <a href="../home"
                 class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-center">
                 Cancel
             </a>

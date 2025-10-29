@@ -8,10 +8,10 @@ $jobController = new JobController($conn);
 $jobs = $jobController->viewJobs();
 
 $title = "My Posted Jobs";
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md mt-8">
+<div class="max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md mt-4 md:mt-8">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">My Posted Jobs</h2>
         <a href="post-job.php"
@@ -57,7 +57,7 @@ include __DIR__ . '/../../includes/employer-header.php';
     <div class="space-y-4">
         <?php foreach ($jobs as $job): ?>
         <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-            <div class="flex justify-between items-start">
+            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start">
                 <div class="flex-1 cursor-pointer"
                     onclick="window.location.href='job-details.php?id=<?php echo $job['uuid']; ?>'">
                     <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
@@ -97,28 +97,14 @@ include __DIR__ . '/../../includes/employer-header.php';
                     </p>
                     <?php endif; ?>
                 </div>
-                <div class="flex space-x-2 ml-4">
-                    <a href="job-details.php?id=<?php echo $job['uuid']; ?>"
-                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        View
-                    </a>
+                <div class="flex flex-col sm:flex-row gap-2 sm:space-x-2 ml-0 sm:ml-4 mt-4 sm:mt-0">
+
                     <a href="job-applications.php?id=<?php echo $job['uuid']; ?>"
-                        class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 mobile-btn-full">
                         View Applications
                     </a>
-                    <a href="edit-job.php?id=<?php echo $job['uuid']; ?>"
-                        class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
-                        Edit
-                    </a>
-                    <form method="post" action="delete-job.php" class="inline"
-                        onsubmit="return confirm('Are you sure you want to delete this job?')">
-                        <?php echo csrf_field(); ?>
-                        <input type="hidden" name="job_id" value="<?php echo $job['uuid']; ?>">
-                        <button type="submit"
-                            class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                            Delete
-                        </button>
-                    </form>
+
+
                 </div>
             </div>
         </div>

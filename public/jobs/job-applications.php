@@ -38,7 +38,7 @@ $job = $jobController->job->getJobById($jobId);
 
 if (!$job || $job['employer_uuid'] !== $employerUuid) {
     $_SESSION['errors'] = ['Job not found or you do not have permission to view it'];
-    header("Location: ../jobs/jobs.php");
+    header("Location: ../index.php");
     exit;
 }
 
@@ -59,10 +59,10 @@ foreach ($applications as $app) {
 }
 
 $title = "Applications for " . htmlspecialchars($job['title']);
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
     <!-- Header -->
     <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
@@ -72,16 +72,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                     Applications for <span class="font-semibold"><?php echo htmlspecialchars($job['title']); ?></span>
                 </p>
             </div>
-            <div class="flex gap-3">
-                <a href="../jobs/job-details.php?id=<?php echo $job['uuid']; ?>"
-                    class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
-                    View Job Details
-                </a>
-                <a href="applications.php"
-                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    All Applications
-                </a>
-            </div>
+
         </div>
 
         <!-- Statistics Cards -->
@@ -213,7 +204,7 @@ include __DIR__ . '/../../includes/employer-header.php';
         </svg>
         <h3 class="text-xl font-medium text-gray-900 mb-2">No applications yet</h3>
         <p class="text-gray-500 mb-6">This job hasn't received any applications yet</p>
-        <a href="../jobs/jobs.php" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+        <a href="../index.php" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
             View All Jobs
         </a>
     </div>
@@ -223,7 +214,7 @@ include __DIR__ . '/../../includes/employer-header.php';
             <?php foreach ($applications as $app): ?>
             <div class="p-6 hover:bg-gray-50 transition-colors application-card"
                 data-status="<?php echo $app['status']; ?>">
-                <div class="flex justify-between items-start">
+                <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
                             <div
@@ -278,7 +269,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-4 sm:mt-0">
                         <?php
                         $statusColors = [
                             'pending' => 'bg-yellow-100 text-yellow-800',
@@ -288,11 +279,12 @@ include __DIR__ . '/../../includes/employer-header.php';
                         ];
                         $statusColor = $statusColors[$app['status']] ?? 'bg-gray-100 text-gray-800';
                         ?>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $statusColor; ?>">
+                        <span
+                            class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $statusColor; ?> self-start">
                             <?php echo ucfirst($app['status']); ?>
                         </span>
                         <a href="../applications/application-details.php?id=<?php echo $app['uuid']; ?>"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium mobile-btn-full">
                             View Details
                         </a>
                     </div>

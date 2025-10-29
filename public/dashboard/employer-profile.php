@@ -16,7 +16,7 @@ $data = $profileController->showProfile();
 $profile = $data['profile'];
 
 $title = "Employer Profile";
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-4xl mx-auto">

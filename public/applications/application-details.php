@@ -67,7 +67,7 @@ if (!$job || !$jobseeker) {
 }
 
 $title = "Application Details - " . htmlspecialchars($jobseeker['fullName'] ?? 'Unknown');
-include __DIR__ . '/../../includes/employer-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -81,9 +81,7 @@ include __DIR__ . '/../../includes/employer-header.php';
                         class="font-semibold"><?php echo htmlspecialchars($job['title']); ?></span>
                 </p>
             </div>
-            <a href="applications.php" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition">
-                ← Back to Applications
-            </a>
+
         </div>
     </div>
 

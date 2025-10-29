@@ -1,5 +1,5 @@
 <?php
-$title = "Job Portal - Find Your Dream Job";
+$title = "LSS Systems - Find Your Dream Job";
 include __DIR__ . '/../includes/header.php';
 ?>
 

@@ -16,7 +16,7 @@ $data = $profileController->showProfile();
 $profile = $data['profile'];
 
 $title = "Admin Profile";
-include __DIR__ . '/../../includes/admin-header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-4xl mx-auto">
