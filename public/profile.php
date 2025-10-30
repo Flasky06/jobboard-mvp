@@ -87,7 +87,7 @@ include __DIR__ . '/../includes/header.php';
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-gray-700 mb-2">Email</label>
-                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['email'] ?? 'Not provided'); ?></p>
+                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['email'] ?? ''); ?></p>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 mb-2">Change Password</label>
@@ -101,57 +101,66 @@ include __DIR__ . '/../includes/header.php';
         <div class="mb-6">
             <h2 class="text-xl font-semibold mb-4">Professional Information</h2>
             <div class="grid md:grid-cols-2 gap-4">
+                <?php if (!empty($profile['fullName'])): ?>
                 <div>
                     <label class="block text-gray-700 mb-2">Full Name</label>
-                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['fullName'] ?? 'Not provided'); ?></p>
+                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['fullName']); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($profile['phone'])): ?>
                 <div>
                     <label class="block text-gray-700 mb-2">Phone Number</label>
-                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['phone'] ?? 'Not provided'); ?></p>
+                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['phone']); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($profile['professional_title'])): ?>
                 <div>
                     <label class="block text-gray-700 mb-2">Professional Title</label>
                     <p class="text-gray-900">
-                        <?php echo htmlspecialchars($profile['professional_title'] ?? 'Not provided'); ?></p>
+                        <?php echo htmlspecialchars($profile['professional_title']); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($profile['gender'])): ?>
                 <div>
                     <label class="block text-gray-700 mb-2">Gender</label>
                     <p class="text-gray-900">
-                        <?php echo htmlspecialchars(ucfirst($profile['gender'] ?? 'Not provided')); ?></p>
+                        <?php echo htmlspecialchars(ucfirst($profile['gender'])); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($profile['dob'])): ?>
                 <div>
                     <label class="block text-gray-700 mb-2">Date of Birth</label>
-                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['dob'] ?? 'Not provided'); ?></p>
+                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['dob']); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($profile['location'])): ?>
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 mb-2">Location</label>
-                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['location'] ?? 'Not provided'); ?></p>
+                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['location']); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($profile['bio'])): ?>
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 mb-2">Bio</label>
-                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['bio'] ?? 'Not provided'); ?></p>
+                    <p class="text-gray-900"><?php echo htmlspecialchars($profile['bio']); ?></p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($additionalData['skills'])): ?>
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 mb-2">Skills</label>
                     <p class="text-gray-900">
-                        <?php echo htmlspecialchars(!empty($additionalData['skills']) ? implode(', ', $additionalData['skills']) : 'Not provided'); ?>
+                        <?php echo htmlspecialchars(implode(', ', $additionalData['skills'])); ?>
                     </p>
                 </div>
+                <?php endif; ?>
+                <?php if (!empty($additionalData['education'])): ?>
                 <div class="md:col-span-2">
                     <label class="block text-gray-700 mb-2">Education</label>
                     <p class="text-gray-900">
-                        <?php echo htmlspecialchars(!empty($additionalData['education']) ? implode(', ', $additionalData['education']) : 'Not provided'); ?>
+                        <?php echo htmlspecialchars(implode(', ', $additionalData['education'])); ?>
                     </p>
                 </div>
-                <div>
-                    <label class="block text-gray-700 mb-2">Profile Picture</label>
-                    <?php if (!empty($profile['profile_picture'])): ?>
-                    <img src="<?php echo htmlspecialchars($profile['profile_picture']); ?>" alt="Profile Picture"
-                        class="w-20 h-20 rounded-full object-cover">
-                    <?php else: ?>
-                    <p class="text-gray-900">No profile picture uploaded</p>
-                    <?php endif; ?>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
 

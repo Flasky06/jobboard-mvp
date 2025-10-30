@@ -2,9 +2,10 @@
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../helpers/session.php';
 require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../controllers/JobController.php';
 
 // Check if user is admin
-if ($_SESSION['role'] !== 'admin') {
+if (!isAdmin()) {
     redirect('/home.php');
 }
 
@@ -14,16 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
 
     if ($action === 'deactivate' || $action === 'activate') {
-        $status = $action === 'activate' ? 1 : 0;
-        $stmt = $conn->prepare("UPDATE jobs SET is_active = ? WHERE uuid = ?");
+        $status = $action === 'activate' ? 'open' : 'closed';
+        $stmt = $conn->prepare("UPDATE job_posts SET status = ? WHERE uuid = ?");
         if ($stmt) {
-            $stmt->bind_param("is", $status, $job_uuid);
+            $stmt->bind_param("ss", $status, $job_uuid);
             $stmt->execute();
-            $_SESSION['success'] = "Job " . ($action === 'activate' ? 'activated' : 'deactivated') . " successfully";
+            $_SESSION['success'] = "Job " . ($action === 'activate' ? 'opened' : 'closed') . " successfully";
         }
     } elseif ($action === 'delete') {
         // Soft delete job
-        $stmt = $conn->prepare("UPDATE jobs SET is_active = 0 WHERE uuid = ?");
+        $stmt = $conn->prepare("UPDATE job_posts SET status = 'closed' WHERE uuid = ?");
         if ($stmt) {
             $stmt->bind_param("s", $job_uuid);
             $stmt->execute();
@@ -34,20 +35,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     redirect('/admin/jobs.php');
 }
 
+$jobController = new JobController($conn);
+
 // Get filter parameters
 $status_filter = $_GET['status'] ?? '';
-$employer_filter = $_GET['employer'] ?? '';
 $search = $_GET['search'] ?? '';
 
-// Build query
+// Handle AJAX requests for live search
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    // Return only the jobs list HTML
+    ob_start();
+    include 'jobs_partial.php';
+    $html = ob_get_clean();
+    echo json_encode(['html' => $html]);
+    exit;
+}
+
+ // Build query for admin jobs with filters
 $query = "
-    SELECT j.uuid, j.title, j.job_description, j.job_type, j.location, j.salary_range,
-           j.is_active, j.created_at, j.updated_at,
-           e.company_name, e.contact_email,
+    SELECT jp.uuid, jp.title, jp.job_description, jp.job_type, jp.location, jp.salary_range,
+           jp.status, jp.created_at, jp.updated_at,
+           e.company_name, u.email as contact_email,
            COUNT(a.uuid) as application_count
-    FROM jobs j
-    LEFT JOIN employers e ON j.employer_uuid = e.uuid
-    LEFT JOIN applications a ON j.uuid = a.job_uuid
+    FROM job_posts jp
+    LEFT JOIN employers e ON jp.employer_uuid = e.uuid
+    LEFT JOIN users u ON e.user_uuid = u.uuid
+    LEFT JOIN applications a ON jp.uuid = a.job_uuid
 ";
 
 $params = [];
@@ -55,33 +68,30 @@ $types = '';
 $where_conditions = [];
 
 if ($status_filter !== '') {
-    $where_conditions[] = "j.is_active = ?";
-    $params[] = (int)$status_filter;
-    $types .= 'i';
-}
-
-if ($employer_filter) {
-    $where_conditions[] = "e.company_name LIKE ?";
-    $params[] = "%$employer_filter%";
+    $status_value = $status_filter === '1' ? 'open' : 'closed';
+    $where_conditions[] = "jp.status = ?";
+    $params[] = $status_value;
     $types .= 's';
 }
 
+
 if ($search) {
-    $where_conditions[] = "(j.title LIKE ? OR j.job_description LIKE ? OR e.company_name LIKE ?)";
+    $where_conditions[] = "(jp.title LIKE ? OR jp.job_description LIKE ? OR e.company_name LIKE ? OR u.email LIKE ?)";
     $search_param = "%$search%";
     $params[] = $search_param;
     $params[] = $search_param;
     $params[] = $search_param;
-    $types .= 'sss';
+    $params[] = $search_param;
+    $types .= 'ssss';
 }
 
 if (!empty($where_conditions)) {
     $query .= " WHERE " . implode(" AND ", $where_conditions);
 }
 
-$query .= " GROUP BY j.uuid, j.title, j.job_description, j.job_type, j.location, j.salary_range,
-                   j.is_active, j.created_at, j.updated_at, e.company_name, e.contact_email
-           ORDER BY j.created_at DESC";
+$query .= " GROUP BY jp.uuid, jp.title, jp.job_description, jp.job_type, jp.location, jp.salary_range,
+                   jp.status, jp.created_at, jp.updated_at, e.company_name, u.email
+           ORDER BY jp.created_at DESC";
 
 // Execute query
 $stmt = $conn->prepare($query);
@@ -96,10 +106,10 @@ if ($stmt) {
 }
 
 // Get job statistics
-$stmt = $conn->prepare("SELECT COUNT(*) as total_jobs FROM jobs");
+$stmt = $conn->prepare("SELECT COUNT(*) as total_jobs FROM job_posts");
 $totalJobs = $stmt ? ($stmt->execute() ? $stmt->get_result()->fetch_assoc()['total_jobs'] : 0) : 0;
 
-$stmt = $conn->prepare("SELECT COUNT(*) as active_jobs FROM jobs WHERE is_active = 1");
+$stmt = $conn->prepare("SELECT COUNT(*) as active_jobs FROM job_posts WHERE status = 'open'");
 $activeJobs = $stmt ? ($stmt->execute() ? $stmt->get_result()->fetch_assoc()['active_jobs'] : 0) : 0;
 
 $stmt = $conn->prepare("SELECT COUNT(*) as total_applications FROM applications");
@@ -139,26 +149,17 @@ include __DIR__ . '/../../includes/header.php';
             <form method="GET" class="flex flex-wrap gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" class="border border-gray-300 rounded px-3 py-2">
+                    <select name="status" id="status-filter" class="border border-gray-300 rounded px-3 py-2">
                         <option value="">All Status</option>
                         <option value="1" <?php echo $status_filter === '1' ? 'selected' : ''; ?>>Active</option>
                         <option value="0" <?php echo $status_filter === '0' ? 'selected' : ''; ?>>Inactive</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Employer</label>
-                    <input type="text" name="employer" value="<?php echo htmlspecialchars($employer_filter); ?>"
-                        placeholder="Company name..." class="border border-gray-300 rounded px-3 py-2">
-                </div>
-                <div>
+                <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
-                        placeholder="Job title or description..." class="border border-gray-300 rounded px-3 py-2">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                        Filter
-                    </button>
+                    <input type="text" name="search" id="search-input" value="<?php echo htmlspecialchars($search); ?>"
+                        placeholder="Search jobs, companies... (live search)"
+                        class="w-full border border-gray-300 rounded px-3 py-2">
                 </div>
             </form>
         </div>
@@ -170,123 +171,7 @@ include __DIR__ . '/../../includes/header.php';
         </div>
         <?php endif; ?>
 
-        <!-- Jobs Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-300">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Company</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Applications</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Posted</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <?php foreach ($jobs as $job): ?>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="max-w-xs">
-                                <div class="text-sm font-medium text-gray-900 truncate">
-                                    <?php echo htmlspecialchars($job['title']); ?>
-                                </div>
-                                <div class="text-sm text-gray-500 line-clamp-2">
-                                    <?php echo htmlspecialchars(substr($job['job_description'], 0, 100)) . (strlen($job['job_description']) > 100 ? '...' : ''); ?>
-                                </div>
-                                <?php if ($job['salary_range']): ?>
-                                <div class="text-sm text-green-600 font-medium">
-                                    <?php echo htmlspecialchars($job['salary_range']); ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">
-                                <?php echo htmlspecialchars($job['company_name'] ?: 'N/A'); ?>
-                            </div>
-                            <div class="text-sm text-gray-500">
-                                <?php echo htmlspecialchars($job['contact_email'] ?: ''); ?>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo htmlspecialchars(ucfirst($job['job_type'])); ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo htmlspecialchars($job['location']); ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo $job['application_count']; ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                <?php echo $job['is_active'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                                <?php echo $job['is_active'] ? 'Active' : 'Inactive'; ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo date('M j, Y', strtotime($job['created_at'])); ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex space-x-2">
-                                <?php if ($job['is_active']): ?>
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="job_uuid" value="<?php echo $job['uuid']; ?>">
-                                    <input type="hidden" name="action" value="deactivate">
-                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900"
-                                        onclick="return confirm('Are you sure you want to deactivate this job?')">
-                                        Deactivate
-                                    </button>
-                                </form>
-                                <?php else: ?>
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="job_uuid" value="<?php echo $job['uuid']; ?>">
-                                    <input type="hidden" name="action" value="activate">
-                                    <button type="submit" class="text-green-600 hover:text-green-900"
-                                        onclick="return confirm('Are you sure you want to activate this job?')">
-                                        Activate
-                                    </button>
-                                </form>
-                                <?php endif; ?>
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="job_uuid" value="<?php echo $job['uuid']; ?>">
-                                    <input type="hidden" name="action" value="delete">
-                                    <button type="submit" class="text-red-600 hover:text-red-900"
-                                        onclick="return confirm('Are you sure you want to delete this job? This action cannot be undone.')">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <?php if (empty($jobs)): ?>
-        <div class="text-center py-12">
-            <div class="text-gray-500 mb-4">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4" />
-                </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-            <p class="text-gray-500">Try adjusting your search filters.</p>
-        </div>
-        <?php endif; ?>
+        <?php include 'jobs_partial.php'; ?>
     </div>
 </div>
 
@@ -298,5 +183,94 @@ include __DIR__ . '/../../includes/header.php';
     overflow: hidden;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const jobsList = document.getElementById('jobs-list');
+    const noJobsMessage = document.getElementById('no-jobs-message');
+
+    let searchTimeout;
+
+    function performSearch() {
+        const searchValue = searchInput.value.trim();
+        const statusValue = statusFilter.value;
+
+        // Only search if search input has at least 3 characters or is empty
+        if (searchValue.length > 0 && searchValue.length < 3) {
+            return;
+        }
+
+        // Show loading state
+        if (jobsList) {
+            jobsList.innerHTML =
+                '<div class="text-center py-8"><div class="text-gray-500">Searching...</div></div>';
+        }
+        if (noJobsMessage) {
+            noJobsMessage.style.display = 'none';
+        }
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append('ajax', '1');
+        if (statusValue) params.append('status', statusValue);
+        if (searchValue) params.append('search', searchValue);
+
+        // Make AJAX request
+        fetch('/admin/jobs.php?' + params.toString())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.html) {
+                    // Replace the jobs list content
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const newJobsList = tempDiv.querySelector('#jobs-list');
+                    const newNoJobsMessage = tempDiv.querySelector('#no-jobs-message');
+
+                    if (newJobsList && jobsList) {
+                        jobsList.innerHTML = newJobsList.innerHTML;
+                    }
+                    if (newNoJobsMessage && noJobsMessage) {
+                        if (newNoJobsMessage.style.display !== 'none') {
+                            noJobsMessage.style.display = 'block';
+                            noJobsMessage.innerHTML = newNoJobsMessage.innerHTML;
+                        } else {
+                            noJobsMessage.style.display = 'none';
+                        }
+                    }
+                } else if (data.error) {
+                    console.error('Server error:', data.error);
+                    if (jobsList) {
+                        jobsList.innerHTML =
+                            '<div class="text-center py-8"><div class="text-red-500">Error: ' + data.error +
+                            '</div></div>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                if (jobsList) {
+                    jobsList.innerHTML =
+                        '<div class="text-center py-8"><div class="text-red-500">Error loading results. Please try again.</div></div>';
+                }
+            });
+    }
+
+    // Debounced search on input
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 300); // 300ms debounce
+    });
+
+    // Immediate search on status change
+    statusFilter.addEventListener('change', performSearch);
+});
+</script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

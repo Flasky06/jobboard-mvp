@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../helpers/session.php';
 require_once __DIR__ . '/../../config/db.php';
 
 // Check if user is admin
-if ($_SESSION['role'] !== 'admin') {
+if (!isAdmin()) {
     redirect('/home.php');
 }
 
@@ -38,15 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $status_filter = $_GET['status'] ?? '';
 $search = $_GET['search'] ?? '';
 
+// Handle AJAX requests for live search
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    // Return only the employers list HTML
+    ob_start();
+    include 'employers_partial.php';
+    $html = ob_get_clean();
+    echo json_encode(['html' => $html]);
+    exit;
+}
+
 // Build query
 $query = "
     SELECT u.uuid, u.email, u.is_verified, u.created_at,
-           e.company_name, e.contact_email, e.contact_phone, e.website,
-           e.industry, e.company_size, e.location, e.description,
-           COUNT(j.uuid) as total_jobs
+           e.company_name, e.contact_number as contact_phone, e.website,
+           e.industry, e.location, e.about_company as description,
+           COUNT(jp.uuid) as total_jobs
     FROM users u
     INNER JOIN employers e ON u.uuid = e.user_uuid
-    LEFT JOIN jobs j ON u.uuid = j.employer_uuid
+    LEFT JOIN job_posts jp ON u.uuid = jp.employer_uuid
     WHERE u.role = 'employer'
 ";
 
@@ -69,8 +79,8 @@ if ($search) {
 }
 
 $query .= " GROUP BY u.uuid, u.email, u.is_verified, u.created_at,
-                   e.company_name, e.contact_email, e.contact_phone, e.website,
-                   e.industry, e.company_size, e.location, e.description
+                   e.company_name, e.contact_number, e.website,
+                   e.industry, e.location, e.about_company
            ORDER BY u.created_at DESC";
 
 // Execute query
@@ -92,7 +102,7 @@ $totalEmployers = $stmt ? ($stmt->execute() ? $stmt->get_result()->fetch_assoc()
 $stmt = $conn->prepare("SELECT COUNT(*) as active_employers FROM users WHERE role = 'employer' AND is_verified = 1");
 $activeEmployers = $stmt ? ($stmt->execute() ? $stmt->get_result()->fetch_assoc()['active_employers'] : 0) : 0;
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total_jobs FROM jobs");
+$stmt = $conn->prepare("SELECT COUNT(*) as total_jobs FROM job_posts");
 $totalJobs = $stmt ? ($stmt->execute() ? $stmt->get_result()->fetch_assoc()['total_jobs'] : 0) : 0;
 
 $title = "Employer Management";
@@ -129,7 +139,7 @@ include __DIR__ . '/../../includes/header.php';
             <form method="GET" class="flex flex-wrap gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" class="border border-gray-300 rounded px-3 py-2">
+                    <select name="status" id="status-filter" class="border border-gray-300 rounded px-3 py-2">
                         <option value="">All Status</option>
                         <option value="1" <?php echo $status_filter === '1' ? 'selected' : ''; ?>>Active</option>
                         <option value="0" <?php echo $status_filter === '0' ? 'selected' : ''; ?>>Inactive</option>
@@ -137,13 +147,9 @@ include __DIR__ . '/../../includes/header.php';
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
-                        placeholder="Company name or email..." class="border border-gray-300 rounded px-3 py-2">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                        Filter
-                    </button>
+                    <input type="text" name="search" id="search-input" value="<?php echo htmlspecialchars($search); ?>"
+                        placeholder="Company name or email... (live search)"
+                        class="border border-gray-300 rounded px-3 py-2">
                 </div>
             </form>
         </div>
@@ -155,119 +161,106 @@ include __DIR__ . '/../../includes/header.php';
         </div>
         <?php endif; ?>
 
-        <!-- Employers Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-300">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Company</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Contact</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Industry</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jobs
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Joined</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <?php foreach ($employers as $employer): ?>
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                        <span class="text-sm font-medium text-gray-700">
-                                            <?php echo strtoupper(substr($employer['company_name'], 0, 1)); ?>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        <?php echo htmlspecialchars($employer['company_name']); ?>
-                                    </div>
-                                    <div class="text-sm text-gray-500">
-                                        <?php echo htmlspecialchars($employer['email']); ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div><?php echo htmlspecialchars($employer['contact_email']); ?></div>
-                            <div><?php echo htmlspecialchars($employer['contact_phone'] ?: 'N/A'); ?></div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo htmlspecialchars($employer['industry'] ?: 'N/A'); ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo $employer['total_jobs']; ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                <?php echo $employer['is_verified'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                                <?php echo $employer['is_verified'] ? 'Active' : 'Inactive'; ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <?php echo date('M j, Y', strtotime($employer['created_at'])); ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex space-x-2">
-                                <?php if ($employer['is_verified']): ?>
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="employer_uuid" value="<?php echo $employer['uuid']; ?>">
-                                    <input type="hidden" name="action" value="deactivate">
-                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900"
-                                        onclick="return confirm('Are you sure you want to deactivate this employer?')">
-                                        Deactivate
-                                    </button>
-                                </form>
-                                <?php else: ?>
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="employer_uuid" value="<?php echo $employer['uuid']; ?>">
-                                    <input type="hidden" name="action" value="activate">
-                                    <button type="submit" class="text-green-600 hover:text-green-900"
-                                        onclick="return confirm('Are you sure you want to activate this employer?')">
-                                        Activate
-                                    </button>
-                                </form>
-                                <?php endif; ?>
-                                <form method="POST" class="inline">
-                                    <input type="hidden" name="employer_uuid" value="<?php echo $employer['uuid']; ?>">
-                                    <input type="hidden" name="action" value="delete">
-                                    <button type="submit" class="text-red-600 hover:text-red-900"
-                                        onclick="return confirm('Are you sure you want to delete this employer? This action cannot be undone.')">
-                                        Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <?php if (empty($employers)): ?>
-        <div class="text-center py-12">
-            <div class="text-gray-500 mb-4">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No employers found</h3>
-            <p class="text-gray-500">Try adjusting your search filters.</p>
-        </div>
-        <?php endif; ?>
+        <?php include 'employers_partial.php'; ?>
     </div>
 </div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const employersList = document.getElementById('employers-list');
+    const noEmployersMessage = document.getElementById('no-employers-message');
+
+    let searchTimeout;
+
+    function performSearch() {
+        const searchValue = searchInput.value.trim();
+        const statusValue = statusFilter.value;
+
+        // Only search if search input has at least 3 characters or is empty
+        if (searchValue.length > 0 && searchValue.length < 3) {
+            return;
+        }
+
+        // Show loading state
+        if (employersList) {
+            employersList.innerHTML =
+                '<div class="text-center py-8"><div class="text-gray-500">Searching...</div></div>';
+        }
+        if (noEmployersMessage) {
+            noEmployersMessage.style.display = 'none';
+        }
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append('ajax', '1');
+        if (statusValue) params.append('status', statusValue);
+        if (searchValue) params.append('search', searchValue);
+
+        // Make AJAX request
+        fetch('/admin/employers.php?' + params.toString())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.html) {
+                    // Replace the employers list content
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const newEmployersList = tempDiv.querySelector('#employers-list');
+                    const newNoEmployersMessage = tempDiv.querySelector('#no-employers-message');
+
+                    if (newEmployersList && employersList) {
+                        employersList.innerHTML = newEmployersList.innerHTML;
+                    }
+                    if (newNoEmployersMessage && noEmployersMessage) {
+                        if (newNoEmployersMessage.style.display !== 'none') {
+                            noEmployersMessage.style.display = 'block';
+                            noEmployersMessage.innerHTML = newNoEmployersMessage.innerHTML;
+                        } else {
+                            noEmployersMessage.style.display = 'none';
+                        }
+                    }
+                } else if (data.error) {
+                    console.error('Server error:', data.error);
+                    if (employersList) {
+                        employersList.innerHTML =
+                            '<div class="text-center py-8"><div class="text-red-500">Error: ' + data.error +
+                            '</div></div>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                if (employersList) {
+                    employersList.innerHTML =
+                        '<div class="text-center py-8"><div class="text-red-500">Error loading results. Please try again.</div></div>';
+                }
+            });
+    }
+
+    // Debounced search on input
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 300); // 300ms debounce
+    });
+
+    // Immediate search on status change
+    statusFilter.addEventListener('change', performSearch);
+});
+</script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

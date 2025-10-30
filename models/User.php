@@ -573,7 +573,21 @@ public function getUserProfile($userId) {
     return [];
   }
 
-  public function getAllEmployers() {
+  public function getAllEmployers($filters = []) {
+    $where = "";
+    $params = [];
+    $types = '';
+
+    if (!empty($filters['search'])) {
+      $searchTerm = '%' . $filters['search'] . '%';
+      $where .= " AND (e.company_name LIKE ? OR e.industry LIKE ? OR e.location LIKE ? OR u.email LIKE ?)";
+      $params[] = $searchTerm;
+      $params[] = $searchTerm;
+      $params[] = $searchTerm;
+      $params[] = $searchTerm;
+      $types .= 'ssss';
+    }
+
     $sql = "
       SELECT
         e.uuid as employer_uuid,
@@ -590,12 +604,17 @@ public function getUserProfile($userId) {
       FROM employers e
       JOIN users u ON e.user_uuid = u.uuid
       WHERE u.role = 'employer'
+      $where
       ORDER BY e.company_name ASC
     ";
 
     $stmt = $this->conn->prepare($sql);
     if (!$stmt) {
       return [];
+    }
+
+    if (!empty($params)) {
+      $stmt->bind_param($types, ...$params);
     }
 
     if ($stmt->execute()) {

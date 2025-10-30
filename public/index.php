@@ -7,6 +7,16 @@ require_once __DIR__ . '/../helpers/csrf.php';
 // No authentication required for home page - job seekers can browse jobs without logging in
 $jobController = new JobController($conn);
 
+// Handle AJAX requests for live search
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    // Return only the jobs list HTML
+    ob_start();
+    include 'index_partial.php';
+    $html = ob_get_clean();
+    echo json_encode(['html' => $html]);
+    exit;
+}
+
 // Get all jobs for job seekers with filters
 $filters = [];
 if (!empty($_GET['search'])) {
@@ -80,7 +90,7 @@ include __DIR__ . '/../includes/header.php';
                 </select>
             </div>
             <div class="flex items-end">
-                <button type="submit"
+                <button type="submit" id="search-btn"
                     class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     Search Jobs
                 </button>
@@ -88,75 +98,7 @@ include __DIR__ . '/../includes/header.php';
         </form>
     </div>
 
-    <!-- Jobs List -->
-    <?php if (empty($jobs)): ?>
-    <div class="text-center py-12">
-        <div class="text-gray-500 mb-4">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4" />
-            </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-        <p class="text-gray-500">Try adjusting your search criteria or check back later for new opportunities.</p>
-    </div>
-    <?php else: ?>
-    <div class="space-y-4">
-        <?php foreach ($jobs as $job): ?>
-        <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-            onclick="window.location.href='jobs/job-details.php?id=<?php echo $job['uuid']; ?>'">
-            <div class="flex justify-between items-start">
-                <div class="flex-1 cursor-pointer">
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                        <?php echo htmlspecialchars($job['title']); ?>
-                    </h3>
-                    <div class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <?php echo htmlspecialchars($job['company_name'] ?? 'Company Name'); ?>
-                        </span>
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <?php echo htmlspecialchars($job['location']); ?>
-                        </span>
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <?php echo htmlspecialchars(ucfirst($job['job_type'])); ?>
-                        </span>
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m0 0l-2-2m2 2l2-2" />
-                            </svg>
-                            Posted <?php echo date('M j, Y', strtotime($job['created_at'])); ?>
-                        </span>
-                    </div>
-                    <p class="text-gray-700 mb-3 line-clamp-2">
-                        <?php echo htmlspecialchars(substr($job['job_description'], 0, 200)) . (strlen($job['job_description']) > 200 ? '...' : ''); ?>
-                    </p>
-                    <?php if (!empty($job['salary_range'])): ?>
-                    <p class="text-green-600 font-medium mb-3">
-                        <?php echo htmlspecialchars($job['salary_range']); ?>
-                    </p>
-                    <?php endif; ?>
-                </div>
-
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
+    <?php include 'index_partial.php'; ?>
 </div>
 
 <style>
@@ -169,6 +111,99 @@ include __DIR__ . '/../includes/header.php';
 </style>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search');
+    const industrySelect = document.getElementById('industry');
+    const jobTypeSelect = document.getElementById('job_type');
+    const searchBtn = document.getElementById('search-btn');
+    const jobsList = document.getElementById('jobs-list');
+    const noJobsMessage = document.getElementById('no-jobs-message');
+
+    let searchTimeout;
+
+    function performSearch() {
+        const searchValue = searchInput.value.trim();
+        const industryValue = industrySelect.value;
+        const jobTypeValue = jobTypeSelect.value;
+
+        // Show loading state
+        if (jobsList) {
+            jobsList.innerHTML =
+                '<div class="text-center py-8"><div class="text-gray-500">Searching...</div></div>';
+        }
+        if (noJobsMessage) {
+            noJobsMessage.style.display = 'none';
+        }
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        params.append('ajax', '1');
+        if (searchValue) params.append('search', searchValue);
+        if (industryValue) params.append('industry', industryValue);
+        if (jobTypeValue) params.append('job_type', jobTypeValue);
+
+        // Make AJAX request
+        fetch('/?' + params.toString())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.html) {
+                    // Replace the jobs list content
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const newJobsList = tempDiv.querySelector('#jobs-list');
+                    const newNoJobsMessage = tempDiv.querySelector('#no-jobs-message');
+
+                    if (newJobsList && jobsList) {
+                        jobsList.innerHTML = newJobsList.innerHTML;
+                    }
+                    if (newNoJobsMessage && noJobsMessage) {
+                        if (newNoJobsMessage.style.display !== 'none') {
+                            noJobsMessage.style.display = 'block';
+                            noJobsMessage.innerHTML = newNoJobsMessage.innerHTML;
+                        } else {
+                            noJobsMessage.style.display = 'none';
+                        }
+                    }
+                } else if (data.error) {
+                    console.error('Server error:', data.error);
+                    if (jobsList) {
+                        jobsList.innerHTML =
+                            '<div class="text-center py-8"><div class="text-red-500">Error: ' + data.error +
+                            '</div></div>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                if (jobsList) {
+                    jobsList.innerHTML =
+                        '<div class="text-center py-8"><div class="text-red-500">Error loading results. Please try again.</div></div>';
+                }
+            });
+    }
+
+    // Debounced search on input
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 300); // 300ms debounce
+    });
+
+    // Immediate search on select changes
+    industrySelect.addEventListener('change', performSearch);
+    jobTypeSelect.addEventListener('change', performSearch);
+
+    // Search on button click (fallback)
+    searchBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        performSearch();
+    });
+});
+
 function toggleSaveJob(jobUuid, button) {
     fetch('save-job.php', {
             method: 'POST',

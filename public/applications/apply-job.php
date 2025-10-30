@@ -66,11 +66,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Generate unique filename
                     $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
                     $newFileName = uniqid('resume_', true) . '.' . $fileExtension;
-                    $uploadPath = __DIR__ . '/../../uploads/resumes/' . $newFileName;
+                    $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/resumes/' . $newFileName;
+
+                    // Debug logging
+                    error_log("Attempting to upload resume to: " . $uploadPath);
+                    error_log("Directory exists: " . (is_dir(dirname($uploadPath)) ? 'yes' : 'no'));
+                    error_log("Directory writable: " . (is_writable(dirname($uploadPath)) ? 'yes' : 'no'));
 
                     if (move_uploaded_file($fileTmpPath, $uploadPath)) {
                         $resumeFile = 'uploads/resumes/' . $newFileName;
+                        error_log("Resume uploaded successfully: " . $resumeFile);
                     } else {
+                        error_log("Failed to move uploaded file");
                         $errors[] = "Failed to upload resume file.";
                     }
                 }

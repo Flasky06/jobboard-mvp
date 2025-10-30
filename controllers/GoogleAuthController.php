@@ -237,7 +237,7 @@ class GoogleAuthController {
                 header('Location: /dashboard/employer-dashboard.php');
                 break;
             default:
-                header('Location: /home.php');
+                header('Location: /');
                 break;
         }
         exit;
