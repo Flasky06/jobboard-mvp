@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Job.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../middleware/auth.php';
 
 class JobController {
     public $job;
@@ -126,11 +127,9 @@ class JobController {
             $userModel = new User($this->conn);
             $employer = $userModel->getUserProfile($_SESSION['user_id']);
 
-            if (!$employer || !isset($employer['uuid'])) {
+            if (!$employer || !isset($employer['employer_uuid'])) {
                 $_SESSION['errors'] = ["Employer profile not found."];
                 header("Location: /jobs/my-jobs.php");
-                exit;
-                exit;
                 exit;
             }
 
@@ -166,7 +165,7 @@ class JobController {
                     'application_deadline' => $application_deadline
                 ];
 
-                if ($this->job->updateJob($jobId, $employer['uuid'], $jobData)) {
+                if ($this->job->updateJob($jobId, $employer['employer_uuid'], $jobData)) {
                     $_SESSION['success'] = "Job updated successfully!";
                     header("Location: /employer/jobs.php");
                     exit;
@@ -198,8 +197,8 @@ class JobController {
         $userModel = new User($this->conn);
         $employer = $userModel->getUserProfile($_SESSION['user_id']);
 
-        if ($employer && isset($employer['uuid'])) {
-            if ($this->job->deleteJob($jobId, $employer['uuid'])) {
+        if ($employer && isset($employer['employer_uuid'])) {
+            if ($this->job->deleteJob($jobId, $employer['employer_uuid'])) {
                 $_SESSION['success'] = "Job deleted successfully!";
             } else {
                 $_SESSION['errors'] = ["Failed to delete job."];

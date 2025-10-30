@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $_SESSION['success'] = "User deleted successfully";
     }
 
-    redirect('/admin/users');
+    redirect('/admin/users.php');
 }
 
 // Get filter parameters

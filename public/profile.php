@@ -6,10 +6,10 @@ require_once __DIR__ . '/../helpers/session.php';
 if (isset($_SESSION['role'])) {
     switch ($_SESSION['role']) {
         case 'employer':
-            header("Location: dashboard/employer-profile.php");
+            header("Location: /dashboard/employer-profile.php");
             exit;
         case 'admin':
-            header("Location: dashboard/admin-profile.php");
+            header("Location: /dashboard/admin-profile.php");
             exit;
         case 'jobseeker':
         default:
@@ -23,8 +23,9 @@ require_once __DIR__ . '/../config/db.php';
 
 $profileController = new ProfileController($conn);
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle form submission (only if not viewing another user's profile)
+$isViewingOther = isset($_GET['view']) || isset($_GET['id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isViewingOther) {
     $profileController->updateProfile();
 }
 
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $data = $profileController->showProfile();
 $profile = $data['profile'];
 $additionalData = $data['additionalData'];
+$isViewingOther = $additionalData['isViewingOther'] ?? false;
 
 $title = "Job Seeker Profile";
 include __DIR__ . '/../includes/header.php';
@@ -75,10 +77,12 @@ include __DIR__ . '/../includes/header.php';
         <div class="mb-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Basic Information</h2>
+                <?php if (!$isViewingOther): ?>
                 <button id="editProfileBtn"
                     class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                     Edit Profile
                 </button>
+                <?php endif; ?>
             </div>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
@@ -152,6 +156,7 @@ include __DIR__ . '/../includes/header.php';
         </div>
 
         <!-- Modal -->
+        <?php if (!$isViewingOther): ?>
         <div id="profileModal"
             class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
             <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
@@ -306,6 +311,7 @@ include __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </div>
+    <?php endif; ?>
 </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

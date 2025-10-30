@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/google-oauth.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../middleware/auth.php';
 
 class GoogleAuthController {
     private $userModel;
@@ -37,7 +38,7 @@ class GoogleAuthController {
         } catch (Exception $e) {
             error_log("Google OAuth login error: " . $e->getMessage());
             $_SESSION['errors'] = ['Failed to initiate Google login. Please try again.'];
-            header('Location: /auth/login');
+            header('Location: /auth/login.php');
             exit;
         }
     }
@@ -86,7 +87,7 @@ class GoogleAuthController {
         } catch (Exception $e) {
             error_log("Google OAuth callback error: " . $e->getMessage());
             $_SESSION['errors'] = ['Google authentication failed. Please try again.'];
-            header('Location: /auth/login');
+            header('Location: /auth/login.php');
             exit;
         }
     }
@@ -215,7 +216,7 @@ class GoogleAuthController {
 
             // Redirect to profile completion
             $_SESSION['success'] = 'Account created successfully! Please complete your profile.';
-            header('Location: /profile');
+            header('Location: /profile.php');
             exit;
 
         } catch (Exception $e) {
@@ -230,13 +231,13 @@ class GoogleAuthController {
     private function redirectBasedOnRole($role) {
         switch ($role) {
             case 'admin':
-                header('Location: /admin-dashboard');
+                header('Location: /dashboard/admin-dashboard.php');
                 break;
             case 'employer':
-                header('Location: /employer-dashboard');
+                header('Location: /dashboard/employer-dashboard.php');
                 break;
             default:
-                header('Location: /home');
+                header('Location: /home.php');
                 break;
         }
         exit;

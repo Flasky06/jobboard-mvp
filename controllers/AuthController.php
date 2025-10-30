@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../helpers/session.php';
 require_once __DIR__ . '/../helpers/csrf.php';
+require_once __DIR__ . '/../middleware/auth.php';
 
 class AuthController {
   private $user;

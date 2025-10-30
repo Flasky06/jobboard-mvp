@@ -16,9 +16,19 @@ class ProfileController {
       return;
     }
 
-    // FIX: Support both user_id and user_uuid in session
-    $userId = $_SESSION['user_uuid'] ?? $_SESSION['user_id'] ?? $_SESSION['uuid'] ?? null;
-    
+    // Check if viewing another user's profile (for admins/employers)
+    $viewType = $_GET['view'] ?? null;
+    $viewId = $_GET['id'] ?? null;
+    $isViewingOther = false;
+
+    if ($viewId && (isAdmin() || isEmployer() || isJobSeeker())) {
+      $userId = $viewId;
+      $isViewingOther = true;
+    } else {
+      // FIX: Support both user_id and user_uuid in session
+      $userId = $_SESSION['user_uuid'] ?? $_SESSION['user_id'] ?? $_SESSION['uuid'] ?? null;
+    }
+
     if (!$userId) {
       error_log("ProfileController: No user ID found in session. Session data: " . print_r($_SESSION, true));
       $_SESSION['errors'] = ["Session expired. Please login again."];
@@ -26,9 +36,15 @@ class ProfileController {
       return;
     }
 
-    error_log("ProfileController: Looking up user with ID: " . $userId);
+    error_log("ProfileController: Looking up user with ID: " . $userId . ", viewType: " . ($viewType ?? 'null'));
 
-    $profile = $this->user->getUserProfile($userId);
+    // If viewing employer profile by employer_uuid, get the employer data directly
+    if ($viewType === 'employer' && $viewId) {
+      $profile = $this->user->getEmployerByUuid($viewId);
+      error_log("ProfileController: Viewing employer profile. Profile found: " . ($profile ? 'yes' : 'no'));
+    } else {
+      $profile = $this->user->getUserProfile($userId);
+    }
 
     // Get additional data based on role
     $additionalData = [];
@@ -38,6 +54,9 @@ class ProfileController {
       $additionalData['education'] = !empty($profile['education']) ? array_filter(array_map('trim', explode("\n", $profile['education']))) : [];
       $additionalData['experience'] = [];
     }
+
+    // Add viewing flag for template
+    $additionalData['isViewingOther'] = $isViewingOther;
 
     // Debug: Check if profile data exists
     if (!$profile) {
@@ -153,13 +172,13 @@ class ProfileController {
     // Redirect based on role
     switch ($user['role']) {
       case 'employer':
-        redirect('../dashboard/employer-profile.php');
+        redirect('/dashboard/employer-profile.php');
         break;
       case 'admin':
-        redirect('../dashboard/admin-profile.php');
+        redirect('/dashboard/admin-profile.php');
         break;
       default:
-        redirect('profile.php');
+        redirect('/profile.php');
     }
   }
 

@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
 
-    redirect('/admin/jobs');
+    redirect('/admin/jobs.php');
 }
 
 // Get filter parameters

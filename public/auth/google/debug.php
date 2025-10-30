@@ -68,4 +68,5 @@ foreach ($files as $name => $path) {
 echo "<h2>PHP Version:</h2>";
 echo "PHP Version: " . phpversion() . "<br>";
 echo "Required: 8.0+ (you have PHP " . phpversion() . ")<br>";
+
 ?>

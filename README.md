@@ -13,7 +13,7 @@ A comprehensive PHP-based job portal application that connects job seekers with 
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
-- [Support](#support)
+- [Support](#support)d
 
 ## Features
 

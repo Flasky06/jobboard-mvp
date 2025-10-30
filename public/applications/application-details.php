@@ -4,13 +4,13 @@ ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../../middleware/auth.php';
 require_once __DIR__ . '/../../helpers/session.php';
-require_once __DIR__ . '/../../helpers/csrf.php';  // ← ADD THIS LINE
+require_once __DIR__ . '/../../helpers/csrf.php';  
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../controllers/JobController.php';
 require_once __DIR__ . '/../../controllers/ApplicationController.php';
 
-// Check if user is employer
-if (!isEmployer()) {
+// Check if user is employer or admin
+if (!isEmployer() && !isAdmin()) {
     redirect('/home.php');
 }
 
@@ -25,17 +25,28 @@ if (!$applicationId) {
 $jobController = new JobController($conn);
 $applicationController = new ApplicationController($conn);
 $userId = getUserId();
-$employer = $jobController->user->getUserProfile($userId);
-$employerUuid = $employer['employer_uuid'] ?? null;
+$userRole = getUserRole();
 
-if (!$employerUuid) {
-    $_SESSION['errors'] = ['Employer profile not found. Please complete your profile.'];
-    header("Location: applications.php");
+if ($userRole === 'employer') {
+    $employer = $jobController->user->getUserProfile($userId);
+    $employerUuid = $employer['employer_uuid'] ?? null;
+
+    if (!$employerUuid) {
+        $_SESSION['errors'] = ['Employer profile not found. Please complete your profile.'];
+        header("Location: applications.php");
+        exit;
+    }
+
+    // CRITICAL FIX: Pass $employerUuid to verify ownership
+    $application = $applicationController->getApplicationDetails($applicationId, $employerUuid);
+} elseif ($userRole === 'admin') {
+    // Admin can view all applications
+    $application = $applicationController->getApplicationDetails($applicationId);
+} else {
+    $_SESSION['errors'] = ['Access denied'];
+    header("Location: /home.php");
     exit;
 }
-
-// CRITICAL FIX: Pass $employerUuid to verify ownership
-$application = $applicationController->getApplicationDetails($applicationId, $employerUuid);
 
 if (!$application) {
     // Debug logging
@@ -116,7 +127,14 @@ include __DIR__ . '/../../includes/header.php';
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-2">
+                            <?php if ($userRole === 'admin' || $userRole === 'employer'): ?>
+                            <a href="<?php echo $userRole === 'admin' ? '/admin/users.php?view=jobseeker&id=' . htmlspecialchars($jobseeker['uuid']) : '/applications/applicant-profile.php?view=jobseeker&id=' . htmlspecialchars($jobseeker['uuid']); ?>"
+                                class="text-blue-600 hover:text-blue-800 hover:underline">
+                                <?php echo htmlspecialchars($jobseeker['fullName'] ?? 'Unknown Applicant'); ?>
+                            </a>
+                            <?php else: ?>
                             <?php echo htmlspecialchars($jobseeker['fullName'] ?? 'Unknown Applicant'); ?>
+                            <?php endif; ?>
                         </h3>
                         <?php if (!empty($jobseeker['professional_title'])): ?>
                         <p class="text-sm md:text-base text-gray-600 mb-3">
@@ -243,7 +261,7 @@ include __DIR__ . '/../../includes/header.php';
                         <p class="font-medium text-gray-900">Resume Document</p>
                         <p class="text-sm text-gray-500">Click to download</p>
                     </div>
-                    <a href="<?php echo htmlspecialchars($application['resume_file']); ?>" target="_blank" download
+                    <a href="download-resume.php?id=<?php echo htmlspecialchars($application['uuid']); ?>"
                         class="ml-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                         Download
                     </a>

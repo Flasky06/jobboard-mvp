@@ -573,6 +573,70 @@ public function getUserProfile($userId) {
     return [];
   }
 
+  public function getAllEmployers() {
+    $sql = "
+      SELECT
+        e.uuid as employer_uuid,
+        e.company_name,
+        e.contact_number,
+        e.location,
+        e.industry,
+        e.website,
+        e.company_logo,
+        e.about_company,
+        u.email,
+        u.created_at as user_created_at,
+        u.is_verified
+      FROM employers e
+      JOIN users u ON e.user_uuid = u.uuid
+      WHERE u.role = 'employer'
+      ORDER BY e.company_name ASC
+    ";
+
+    $stmt = $this->conn->prepare($sql);
+    if (!$stmt) {
+      return [];
+    }
+
+    if ($stmt->execute()) {
+      return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+    return [];
+  }
+
+  public function getEmployerByUuid($employerUuid) {
+    $sql = "
+      SELECT
+        e.uuid as employer_uuid,
+        e.company_name,
+        e.contact_number,
+        e.location,
+        e.industry,
+        e.website,
+        e.company_logo,
+        e.about_company,
+        u.email,
+        u.created_at as user_created_at,
+        u.is_verified,
+        'employer' as role
+      FROM employers e
+      JOIN users u ON e.user_uuid = u.uuid
+      WHERE e.uuid = ?
+    ";
+
+    $stmt = $this->conn->prepare($sql);
+    if (!$stmt) {
+      return false;
+    }
+
+    $stmt->bind_param("s", $employerUuid);
+    if ($stmt->execute()) {
+      $result = $stmt->get_result();
+      return $result->fetch_assoc();
+    }
+    return false;
+  }
+
   public function deleteUser($userId) {
     // Start transaction to ensure all related data is deleted
     $this->conn->begin_transaction();
