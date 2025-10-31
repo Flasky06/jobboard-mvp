@@ -82,20 +82,6 @@ include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Application Details</h1>
-                <p class="text-lg text-gray-600">
-                    Review application for <span
-                        class="font-semibold"><?php echo htmlspecialchars($job['title']); ?></span>
-                </p>
-            </div>
-
-        </div>
-    </div>
-
     <?php if (isset($_SESSION['success'])): ?>
     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
         <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>

@@ -51,14 +51,7 @@ $title = "Employer Dashboard";
 include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Welcome Header -->
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">Welcome back, <?php echo htmlspecialchars($companyName); ?>
-        </h1>
-        <p class="text-lg text-gray-600">Here's what's happening with your job postings today</p>
-    </div>
-
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Active Jobs -->
