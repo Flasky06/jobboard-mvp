@@ -29,7 +29,13 @@ $title = "Applications";
 include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<!-- Main Container with 30/60 Split Layout -->
+<div class="flex">
+    <!-- Left Sidebar - Company Profile Card (30%) -->
+    <?php include __DIR__ . '/../../includes/employer_profile_card.php'; ?>
+
+    <!-- Right Content Area (60%) -->
+    <div class="main-content-area lg:ml-[30%] lg:w-[60%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
 
     <?php if (isset($_SESSION['success'])): ?>
     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
@@ -195,7 +201,18 @@ include __DIR__ . '/../../includes/header.php';
         </div>
     </div>
     <?php endif; ?>
+    </div>
 </div>
+
+<style>
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content-area {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+</style>
 
 <script>
 // Filter functionality

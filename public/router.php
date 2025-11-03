@@ -10,6 +10,15 @@ $path = strtok($path, '?');
 // Remove leading and trailing slashes
 $path = trim($path, '/');
 
+// Define base path and remove it from the path
+$basePath = '/job-finder/public';
+if (strpos($path, $basePath) === 0) {
+    $path = substr($path, strlen($basePath));
+    $path = trim($path, '/');
+} elseif ($path === 'job-finder/public') {
+    $path = '';
+}
+
 // Define all routes - NO .php extension in paths
 $routes = [
     '' => 'index.php',
@@ -21,6 +30,7 @@ $routes = [
     'auth/register' => 'auth/register.php',
     'auth/logout' => 'auth/logout.php',
     'auth/google' => 'auth/google.php',
+    'auth/google.php' => 'auth/google.php',
     'auth/google/callback' => 'auth/google/callback.php',
 
     // Dashboard routes

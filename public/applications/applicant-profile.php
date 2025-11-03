@@ -47,8 +47,6 @@ include __DIR__ . '/../../includes/header.php';
     <?php endif; ?>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Applicant Profile</h1>
-        <p class="text-gray-600 mb-6">View applicant information and qualifications.</p>
 
         <!-- Profile Display -->
         <div class="mb-6">

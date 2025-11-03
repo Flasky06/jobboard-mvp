@@ -112,8 +112,6 @@ include __DIR__ . '/../../includes/header.php';
 
 <div class="max-w-6xl mx-auto">
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Admin Dashboard</h1>
-        <p class="text-gray-600 mb-6">Welcome back, Admin! Manage your job portal platform.</p>
 
         <!-- Statistics Cards -->
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

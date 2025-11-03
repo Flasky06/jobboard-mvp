@@ -11,115 +11,276 @@ $title = "My Posted Jobs";
 include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md mt-4 md:mt-8">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">My Posted Jobs</h2>
-        <a href="post-job.php"
-            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Post New Job
-        </a>
-    </div>
+<!-- Main Container with 30/60 Split Layout -->
+<div class="flex">
+    <!-- Left Sidebar - Company Profile Card (30%) -->
+    <?php include __DIR__ . '/../../includes/employer_profile_card.php'; ?>
 
-    <?php if (isset($_SESSION['success'])): ?>
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-        <?php echo htmlspecialchars($_SESSION['success']); ?>
-    </div>
-    <?php unset($_SESSION['success']); ?>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['errors'])): ?>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-        <ul class="list-disc list-inside">
-            <?php foreach ($_SESSION['errors'] as $error): ?>
-            <li><?php echo htmlspecialchars($error); ?></li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-    <?php unset($_SESSION['errors']); ?>
-    <?php endif; ?>
-
-    <?php if (empty($jobs)): ?>
-    <div class="text-center py-12">
-        <div class="text-gray-500 mb-4">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4" />
-            </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs posted yet</h3>
-        <p class="text-gray-500 mb-4">Get started by posting your first job opening.</p>
-        <a href="post-job.php"
-            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Post Your First Job
-        </a>
-    </div>
-    <?php else: ?>
-    <div class="space-y-4">
-        <?php foreach ($jobs as $job): ?>
-        <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start">
-                <div class="flex-1 cursor-pointer"
-                    onclick="window.location.href='job-details.php?id=<?php echo $job['uuid']; ?>'">
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                        <?php echo htmlspecialchars($job['title']); ?>
-                    </h3>
-                    <div class="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <?php echo htmlspecialchars($job['location']); ?>
-                        </span>
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <?php echo htmlspecialchars(ucfirst($job['job_type'])); ?>
-                        </span>
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m0 0l-2-2m2 2l2-2" />
-                            </svg>
-                            Posted <?php echo date('M j, Y', strtotime($job['created_at'])); ?>
-                        </span>
-                    </div>
-                    <p class="text-gray-700 mb-3 line-clamp-2">
-                        <?php echo htmlspecialchars(substr($job['job_description'], 0, 200)) . (strlen($job['job_description']) > 200 ? '...' : ''); ?>
-                    </p>
-                    <?php if (!empty($job['salary_range'])): ?>
-                    <p class="text-green-600 font-medium mb-3">
-                        <?php echo htmlspecialchars($job['salary_range']); ?>
-                    </p>
-                    <?php endif; ?>
+    <!-- Right Content Area (60%) -->
+    <div class="main-content-area lg:ml-[30%] lg:w-[60%] w-full mx-auto">
+        <div class="bg-white rounded-lg shadow-md mt-8 p-8">
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">My Posted Jobs</h1>
+                    <p class="text-gray-600">Manage and track all your job postings</p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-2 sm:space-x-2 ml-0 sm:ml-4 mt-4 sm:mt-0">
+                <a href="/jobs/post-job.php"
+                    class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    Post New Job
+                </a>
+            </div>
 
-                    <a href="job-applications.php?id=<?php echo $job['uuid']; ?>"
-                        class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 mobile-btn-full">
-                        View Applications
-                    </a>
+            <!-- Success Message -->
+            <?php if (isset($_SESSION['success'])): ?>
+            <div
+                class="bg-green-50 border-l-4 border-green-500 text-green-800 px-6 py-4 rounded-lg mb-6 flex items-start">
+                <i class="fas fa-check-circle text-green-500 mr-3 mt-0.5"></i>
+                <div class="flex-1">
+                    <?php echo htmlspecialchars($_SESSION['success']); ?>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-green-600 hover:text-green-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
 
-
+            <!-- Error Messages -->
+            <?php if (isset($_SESSION['errors'])): ?>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-800 px-6 py-4 rounded-lg mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3 mt-0.5"></i>
+                    <ul class="list-disc list-inside space-y-1">
+                        <?php foreach ($_SESSION['errors'] as $error): ?>
+                        <li><?php echo htmlspecialchars($error); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
             </div>
+            <?php unset($_SESSION['errors']); ?>
+            <?php endif; ?>
+
+            <!-- Jobs List -->
+            <?php if (empty($jobs)): ?>
+            <!-- Empty State -->
+            <div class="text-center py-16 bg-gray-50 rounded-lg">
+                <div class="mb-6">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                        <i class="fas fa-briefcase text-blue-600 text-3xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-semibold text-gray-900 mb-2">No Jobs Posted Yet</h3>
+                <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                    Start attracting top talent by posting your first job opening. It only takes a few minutes!
+                </p>
+                <a href="/jobs/post-job.php"
+                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    Post Your First Job
+                </a>
+            </div>
+            <?php else: ?>
+            <!-- Jobs Grid -->
+            <div class="space-y-5">
+                <?php foreach ($jobs as $job): ?>
+                <div
+                    class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow bg-white">
+                    <!-- Job Card Header -->
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 border-b border-gray-200">
+                        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer transition-colors"
+                                            onclick="window.location.href='/jobs/job-details.php?uuid=<?php echo htmlspecialchars($job['uuid']); ?>'">
+                                            <?php echo htmlspecialchars($job['title']); ?>
+                                        </h3>
+
+                                        <!-- Job Meta Info -->
+                                        <div class="flex flex-wrap gap-3 text-sm text-gray-600 mb-3">
+                                            <span class="flex items-center">
+                                                <i class="fas fa-map-marker-alt mr-1.5 text-gray-400"></i>
+                                                <?php echo htmlspecialchars($job['location']); ?>
+                                            </span>
+                                            <span class="flex items-center">
+                                                <i class="fas fa-briefcase mr-1.5 text-gray-400"></i>
+                                                <?php echo htmlspecialchars(ucfirst(str_replace('-', ' ', $job['job_type']))); ?>
+                                            </span>
+                                            <span class="flex items-center">
+                                                <i class="fas fa-calendar mr-1.5 text-gray-400"></i>
+                                                Posted <?php echo date('M j, Y', strtotime($job['created_at'])); ?>
+                                            </span>
+                                        </div>
+
+                                        <!-- Job Tags -->
+                                        <div class="flex flex-wrap gap-2">
+                                            <?php if (!empty($job['industry'])): ?>
+                                            <span
+                                                class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                                                <?php echo htmlspecialchars($job['industry']); ?>
+                                            </span>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($job['salary_range'])): ?>
+                                            <span
+                                                class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                                <i class="fas fa-money-bill-wave mr-1"></i>
+                                                <?php echo htmlspecialchars($job['salary_range']); ?>
+                                            </span>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($job['status'])): ?>
+                                            <span
+                                                class="px-3 py-1 <?php echo $job['status'] === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'; ?> text-xs font-medium rounded-full">
+                                                <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
+                                                <?php echo ucfirst($job['status']); ?>
+                                            </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Card Body -->
+                    <div class="p-6">
+                        <!-- Job Description Preview -->
+                        <p class="text-gray-700 mb-4 line-clamp-3 leading-relaxed">
+                            <?php echo htmlspecialchars($job['job_description']); ?>
+                        </p>
+
+                        <!-- Job Stats -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">
+                                    <?php echo $job['applications_count'] ?? 0; ?>
+                                </div>
+                                <div class="text-xs text-gray-600">Applications</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">
+                                    <?php echo $job['views_count'] ?? 0; ?>
+                                </div>
+                                <div class="text-xs text-gray-600">Views</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600">
+                                    <?php 
+                                    if (!empty($job['deadline'])) {
+                                        $days = floor((strtotime($job['deadline']) - time()) / 86400);
+                                        echo max(0, $days);
+                                    } else {
+                                        echo '--';
+                                    }
+                                    ?>
+                                </div>
+                                <div class="text-xs text-gray-600">Days Left</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-600">
+                                    <?php echo $job['shortlisted_count'] ?? 0; ?>
+                                </div>
+                                <div class="text-xs text-gray-600">Shortlisted</div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-3">
+                            <a href="/jobs/job-details.php?uuid=<?php echo htmlspecialchars($job['uuid']); ?>"
+                                class="flex-1 min-w-[140px] px-4 py-2.5 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
+                                <i class="fas fa-eye mr-2"></i>
+                                View Details
+                            </a>
+
+                            <a href="/applications/job-applications.php?id=<?php echo htmlspecialchars($job['uuid']); ?>"
+                                class="flex-1 min-w-[140px] px-4 py-2.5 bg-green-600 text-white text-center rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
+                                <i class="fas fa-users mr-2"></i>
+                                Applications (<?php echo $job['applications_count'] ?? 0; ?>)
+                            </a>
+
+                            <a href="/jobs/edit-job.php?uuid=<?php echo htmlspecialchars($job['uuid']); ?>"
+                                class="px-4 py-2.5 bg-gray-100 text-gray-700 text-center rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm">
+                                <i class="fas fa-edit mr-2"></i>
+                                Edit
+                            </a>
+
+                            <button onclick="confirmDelete('<?php echo htmlspecialchars($job['uuid']); ?>')"
+                                class="px-4 py-2.5 bg-red-100 text-red-700 text-center rounded-lg hover:bg-red-200 transition-colors font-medium text-sm">
+                                <i class="fas fa-trash mr-2"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
         </div>
-        <?php endforeach; ?>
     </div>
-    <?php endif; ?>
 </div>
 
 <style>
-.line-clamp-2 {
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content-area {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+.line-clamp-3 {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* Smooth transitions for job cards */
+.bg-white:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
 </style>
+
+<script>
+function confirmDelete(jobUuid) {
+    if (confirm('Are you sure you want to delete this job posting? This action cannot be undone.')) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/jobs/delete-job.php';
+
+        const uuidInput = document.createElement('input');
+        uuidInput.type = 'hidden';
+        uuidInput.name = 'uuid';
+        uuidInput.value = jobUuid;
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = '<?php echo generate_csrf_token(); ?>';
+
+        form.appendChild(uuidInput);
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Auto-dismiss success messages after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const successMessage = document.querySelector('.bg-green-50');
+    if (successMessage) {
+        setTimeout(() => {
+            successMessage.style.opacity = '0';
+            successMessage.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => successMessage.remove(), 500);
+        }, 5000);
+    }
+});
+</script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

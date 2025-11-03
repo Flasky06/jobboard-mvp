@@ -16,7 +16,7 @@ $title = "Register";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($title) ? htmlspecialchars($title) : 'LSS Systems - Register'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/css/styles.css" rel="stylesheet">
+    <link href="/job-finder/public/css/styles.css" rel="stylesheet">
 </head>
 
 <body class="bg-gray-50">
@@ -101,8 +101,8 @@ $title = "Register";
             </div>
 
             <div class="mt-6">
-                <a href="/auth/google.php"
-                    class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button type="button" id="google-btn"
+                    class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                         <path fill="#4285F4"
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -114,13 +114,14 @@ $title = "Register";
                             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
                     Continue with Google
-                </a>
+                </button>
             </div>
         </div>
 
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-600">
-                Already have an account? <a href="login.php" class="text-blue-600 hover:text-blue-500">Login here</a>
+                Already have an account? <a href="/job-finder/public/auth/login"
+                    class="text-blue-600 hover:text-blue-500">Login here</a>
             </p>
         </div>
     </div>
@@ -136,6 +137,22 @@ $title = "Register";
         });
 
         const form = document.querySelector('form');
+        const googleBtn = document.getElementById('google-btn');
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+
+        // Initially disable Google button
+        googleBtn.disabled = true;
+
+        // Enable Google button when a role is selected
+        roleInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                googleBtn.disabled = false;
+                googleBtn.onclick = function() {
+                    window.location.href = '/job-finder/public/auth/google.php';
+                };
+            });
+        });
+
         form.addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;

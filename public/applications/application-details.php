@@ -81,7 +81,13 @@ $title = "Application Details - " . htmlspecialchars($jobseeker['fullName'] ?? '
 include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Main Container with 30/60 Split Layout -->
+<div class="flex">
+    <!-- Left Sidebar - Company Profile Card (30%) -->
+    <?php include __DIR__ . '/../../includes/employer_profile_card.php'; ?>
+
+    <!-- Right Content Area (60%) -->
+    <div class="main-content-area lg:ml-[30%] lg:w-[60%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <?php if (isset($_SESSION['success'])): ?>
     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
         <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
@@ -359,6 +365,17 @@ include __DIR__ . '/../../includes/header.php';
             </div>
         </div>
     </div>
+    </div>
 </div>
+
+<style>
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content-area {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+</style>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

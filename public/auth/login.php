@@ -16,7 +16,7 @@ $title = "Login";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($title) ? htmlspecialchars($title) : 'LSS Systems - Login'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="/css/styles.css" rel="stylesheet">
+    <link href="/job-finder/public/css/styles.css" rel="stylesheet">
 </head>
 
 <body class="bg-gray-50">
@@ -97,7 +97,7 @@ $title = "Login";
             </div>
 
             <div class="mt-6">
-                <a href="/auth/google.php"
+                <a href="/job-finder/public/auth/google.php"
                     class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                         <path fill="#4285F4"
@@ -116,11 +116,13 @@ $title = "Login";
 
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-600">
-                Don't have an account? <a href="register.php" class="text-blue-600 hover:text-blue-500">Register
+                Don't have an account? <a href="/job-finder/public/auth/register"
+                    class="text-blue-600 hover:text-blue-500">Register
                     here</a>
             </p>
             <p class="text-sm text-gray-600 mt-2">
-                <a href="forgot-password.php" class="text-blue-600 hover:text-blue-500">Forgot your password?</a>
+                <a href="/job-finder/public/auth/forgot-password" class="text-blue-600 hover:text-blue-500">Forgot your
+                    password?</a>
             </p>
         </div>
     </div>

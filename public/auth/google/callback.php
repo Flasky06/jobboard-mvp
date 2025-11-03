@@ -12,7 +12,7 @@ error_log("Session state: " . ($_SESSION['oauth_state'] ?? 'not set'));
 if (isset($_GET['error'])) {
     error_log("Google OAuth error: " . $_GET['error']);
     $_SESSION['errors'] = ['Google authentication was cancelled or failed. Please try again.'];
-    header('Location: /auth/login.php');
+    header('Location: /job-finder/public/auth/login');
     exit;
 }
 
@@ -24,7 +24,7 @@ try {
     error_log("Exception in callback: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     $_SESSION['errors'] = ['Error: ' . $e->getMessage()];
-    header('Location: /auth/login.php');
+    header('Location: /job-finder/public/auth/login');
     exit;
 }
 ?>

@@ -33,7 +33,7 @@ try {
     error_log("EXCEPTION in google.php: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     $_SESSION['errors'] = ['Failed to start Google login: ' . $e->getMessage()];
-    header('Location: /auth/login.php');
+    header('Location: /job-finder/public/auth/login');
     exit;
 }
 ?>

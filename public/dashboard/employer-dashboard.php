@@ -49,6 +49,7 @@ $companyName = $employer['company_name'] ?? 'Your Company';
 
 $title = "Employer Dashboard";
 include __DIR__ . '/../../includes/header.php';
+include __DIR__ . '/../../includes/job_seeker_profile_card.php';
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">

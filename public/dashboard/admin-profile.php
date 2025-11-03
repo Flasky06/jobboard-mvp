@@ -21,8 +21,6 @@ include __DIR__ . '/../../includes/header.php';
 
 <div class="max-w-4xl mx-auto">
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Admin Profile</h1>
-        <p class="text-gray-600 mb-6">Manage your admin profile information.</p>
 
         <?php if (isset($_SESSION['success'])): ?>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">

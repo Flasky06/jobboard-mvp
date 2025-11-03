@@ -186,7 +186,7 @@ session_start();
                 style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">Go
                 to Home</a>
             <?php if (!empty($_SESSION)): ?>
-            <a href="/auth/logout.php"
+            <a href="/job-finder/public/auth/logout.php"
                 style="display: inline-block; padding: 10px 20px; background: #dc3545; color: white; text-decoration: none; border-radius: 4px; margin-left: 10px;">Logout</a>
             <?php else: ?>
             <a href="/auth/login.php"

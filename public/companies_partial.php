@@ -30,13 +30,13 @@ if (!isset($employers) && isset($_GET['ajax'])) {
     <p class="text-gray-500">There are no registered companies yet.</p>
 </div>
 <?php else: ?>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="companies-list">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="companies-list">
     <?php foreach ($employers as $employer): ?>
     <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         <div class="p-6">
             <div class="flex items-start gap-4 mb-4">
                 <?php if (!empty($employer['company_logo'])): ?>
-                <img src="<?php echo htmlspecialchars($employer['company_logo']); ?>" alt="Company Logo"
+                <img src="/job-finder<?php echo htmlspecialchars($employer['company_logo']); ?>" alt="Company Logo"
                     class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 flex-shrink-0">
                 <?php endif; ?>
 

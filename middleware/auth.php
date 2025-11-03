@@ -58,6 +58,8 @@ function redirect($url) {
     if (!str_starts_with($url, '/')) {
         $url = '/' . $url;
     }
+    // Add base path for job-finder
+    $url = '/job-finder/public' . $url;
     header("Location: " . $url);
     exit;
 }

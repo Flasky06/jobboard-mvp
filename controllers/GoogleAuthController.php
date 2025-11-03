@@ -38,7 +38,7 @@ class GoogleAuthController {
         } catch (Exception $e) {
             error_log("Google OAuth login error: " . $e->getMessage());
             $_SESSION['errors'] = ['Failed to initiate Google login. Please try again.'];
-            header('Location: /auth/login.php');
+            header('Location: /job-finder/public/auth/login');
             exit;
         }
     }
@@ -87,7 +87,7 @@ class GoogleAuthController {
         } catch (Exception $e) {
             error_log("Google OAuth callback error: " . $e->getMessage());
             $_SESSION['errors'] = ['Google authentication failed. Please try again.'];
-            header('Location: /auth/login.php');
+            header('Location: /job-finder/public/auth/login');
             exit;
         }
     }
@@ -180,47 +180,19 @@ class GoogleAuthController {
      */
     private function createNewUser($googleUser, $token) {
         try {
-            $this->conn->begin_transaction();
+            // Store Google user data in session for role selection
+            $_SESSION['google_user_data'] = [
+                'id' => $googleUser->id,
+                'email' => $googleUser->email,
+                'name' => $googleUser->name ?: explode('@', $googleUser->email)[0],
+                'token' => $token
+            ];
 
-            // Generate UUID and create user
-            $userUuid = $this->generateUUID();
-            $hashedPassword = password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT); // Random password for OAuth users
-
-            // Insert user
-            $stmt = $this->conn->prepare("
-                INSERT INTO users (uuid, email, password, google_id, role, is_verified, created_at)
-                VALUES (?, ?, ?, ?, 'jobseeker', 1, NOW())
-            ");
-            $stmt->bind_param("ssss", $userUuid, $googleUser->email, $hashedPassword, $googleUser->id);
-            $stmt->execute();
-
-            // Create jobseeker profile
-            $jobseekerUuid = $this->generateUUID();
-            $fullName = $googleUser->name ?: explode('@', $googleUser->email)[0];
-
-            $stmt = $this->conn->prepare("
-                INSERT INTO job_seekers (uuid, user_uuid, fullName, profile_completed, created_at)
-                VALUES (?, ?, ?, 0, NOW())
-            ");
-            $stmt->bind_param("sss", $jobseekerUuid, $userUuid, $fullName);
-            $stmt->execute();
-
-            $this->conn->commit();
-
-            // Store access token in session
-            $_SESSION[GOOGLE_OAUTH_ACCESS_TOKEN] = $token;
-
-            // Get the created user and set session
-            $newUser = $this->findUserByGoogleId($googleUser->id);
-            setUserSession($newUser);
-
-            // Redirect to profile completion
-            $_SESSION['success'] = 'Account created successfully! Please complete your profile.';
-            header('Location: /profile.php');
+            // Redirect to role selection page
+            header('Location: /job-finder/public/auth/google/role-selection');
             exit;
 
         } catch (Exception $e) {
-            $this->conn->rollback();
             throw $e;
         }
     }
@@ -231,13 +203,13 @@ class GoogleAuthController {
     private function redirectBasedOnRole($role) {
         switch ($role) {
             case 'admin':
-                header('Location: /dashboard/admin-dashboard.php');
+                header('Location: /job-finder/public/dashboard/admin-dashboard');
                 break;
             case 'employer':
-                header('Location: /dashboard/employer-dashboard.php');
+                header('Location: /job-finder/public/dashboard/employer-dashboard');
                 break;
             default:
-                header('Location: /');
+                header('Location: /job-finder/public/');
                 break;
         }
         exit;

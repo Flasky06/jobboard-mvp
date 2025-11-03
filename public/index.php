@@ -7,6 +7,9 @@ require_once __DIR__ . '/../helpers/csrf.php';
 // No authentication required for home page - job seekers can browse jobs without logging in
 $jobController = new JobController($conn);
 
+// Check if profile card should be shown (only for logged-in job seekers)
+$showProfileCard = isset($_SESSION['user_id']) && ($_SESSION['role'] ?? null) === 'jobseeker';
+
 // Handle AJAX requests for live search
 if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     // Return only the jobs list HTML
@@ -34,71 +37,88 @@ $title = "Find Your Dream Job";
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md mt-8">
-    <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">Find Your Dream Job</h1>
-        <p class="text-xl text-gray-600">Discover opportunities that match your skills and career goals</p>
-    </div>
+<!-- Main Container with 30/60 Split Layout -->
+<div class="flex">
+    <!-- Left Sidebar - Profile Card (30%) -->
+    <?php if ($showProfileCard): ?>
+    <?php include __DIR__ . '/../includes/job_seeker_profile_card.php'; ?>
+    <?php endif; ?>
 
-    <!-- Search and Filter Section -->
-    <div class="bg-gray-50 p-6 rounded-lg mb-8">
-        <form method="GET" action="" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search Jobs</label>
-                <input type="text" name="search" id="search"
-                    value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>"
-                    placeholder="Job title, company, or keywords"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                <select name="industry" id="industry"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Industries</option>
-                    <option value="Technology"
-                        <?php echo ($_GET['industry'] ?? '') === 'Technology' ? 'selected' : ''; ?>>Technology</option>
-                    <option value="Marketing"
-                        <?php echo ($_GET['industry'] ?? '') === 'Marketing' ? 'selected' : ''; ?>>Marketing</option>
-                    <option value="Finance" <?php echo ($_GET['industry'] ?? '') === 'Finance' ? 'selected' : ''; ?>>
-                        Finance</option>
-                    <option value="Healthcare"
-                        <?php echo ($_GET['industry'] ?? '') === 'Healthcare' ? 'selected' : ''; ?>>Healthcare</option>
-                    <option value="Education"
-                        <?php echo ($_GET['industry'] ?? '') === 'Education' ? 'selected' : ''; ?>>Education</option>
-                    <option value="Retail" <?php echo ($_GET['industry'] ?? '') === 'Retail' ? 'selected' : ''; ?>>
-                        Retail</option>
-                    <option value="Manufacturing"
-                        <?php echo ($_GET['industry'] ?? '') === 'Manufacturing' ? 'selected' : ''; ?>>Manufacturing
-                    </option>
-                    <option value="Consulting"
-                        <?php echo ($_GET['industry'] ?? '') === 'Consulting' ? 'selected' : ''; ?>>Consulting</option>
-                </select>
-            </div>
-            <div>
-                <label for="job_type" class="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-                <select name="job_type" id="job_type"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">All Types</option>
-                    <option value="full-time"
-                        <?php echo ($_GET['job_type'] ?? '') === 'full-time' ? 'selected' : ''; ?>>Full Time</option>
-                    <option value="part-time"
-                        <?php echo ($_GET['job_type'] ?? '') === 'part-time' ? 'selected' : ''; ?>>Part Time</option>
-                    <option value="contract" <?php echo ($_GET['job_type'] ?? '') === 'contract' ? 'selected' : ''; ?>>
-                        Contract</option>
-                    <option value="freelance"
-                        <?php echo ($_GET['job_type'] ?? '') === 'freelance' ? 'selected' : ''; ?>>Freelance</option>
-                </select>
-            </div>
-            <div class="flex items-end">
-                <button type="submit" id="search-btn"
-                    class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Search Jobs
-                </button>
-            </div>
-        </form>
-    </div>
+    <!-- Right Content Area (60%) -->
+    <div
+        class="main-content-area <?php echo $showProfileCard ? 'lg:ml-[30%] lg:w-[60%]' : 'full-width'; ?> w-full mx-auto">
 
-    <?php include 'index_partial.php'; ?>
+        <!-- Search and Filter Section -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-8">
+            <form method="GET" action="" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search Jobs</label>
+                    <input type="text" name="search" id="search"
+                        value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>"
+                        placeholder="Job title, company, or keywords"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                    <select name="industry" id="industry"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Industries</option>
+                        <option value="Technology"
+                            <?php echo ($_GET['industry'] ?? '') === 'Technology' ? 'selected' : ''; ?>>Technology
+                        </option>
+                        <option value="Marketing"
+                            <?php echo ($_GET['industry'] ?? '') === 'Marketing' ? 'selected' : ''; ?>>Marketing
+                        </option>
+                        <option value="Finance"
+                            <?php echo ($_GET['industry'] ?? '') === 'Finance' ? 'selected' : ''; ?>>Finance
+                        </option>
+                        <option value="Healthcare"
+                            <?php echo ($_GET['industry'] ?? '') === 'Healthcare' ? 'selected' : ''; ?>>Healthcare
+                        </option>
+                        <option value="Education"
+                            <?php echo ($_GET['industry'] ?? '') === 'Education' ? 'selected' : ''; ?>>Education
+                        </option>
+                        <option value="Retail" <?php echo ($_GET['industry'] ?? '') === 'Retail' ? 'selected' : ''; ?>>
+                            Retail</option>
+                        <option value="Manufacturing"
+                            <?php echo ($_GET['industry'] ?? '') === 'Manufacturing' ? 'selected' : ''; ?>>
+                            Manufacturing</option>
+                        <option value="Consulting"
+                            <?php echo ($_GET['industry'] ?? '') === 'Consulting' ? 'selected' : ''; ?>>Consulting
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label for="job_type" class="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+                    <select name="job_type" id="job_type"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Types</option>
+                        <option value="full-time"
+                            <?php echo ($_GET['job_type'] ?? '') === 'full-time' ? 'selected' : ''; ?>>Full Time
+                        </option>
+                        <option value="part-time"
+                            <?php echo ($_GET['job_type'] ?? '') === 'part-time' ? 'selected' : ''; ?>>Part Time
+                        </option>
+                        <option value="contract"
+                            <?php echo ($_GET['job_type'] ?? '') === 'contract' ? 'selected' : ''; ?>>Contract
+                        </option>
+                        <option value="freelance"
+                            <?php echo ($_GET['job_type'] ?? '') === 'freelance' ? 'selected' : ''; ?>>Freelance
+                        </option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" id="search-btn"
+                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Search Jobs
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <?php include 'index_partial.php'; ?>
+    </div>
+</div>
 </div>
 
 <style>
@@ -107,6 +127,20 @@ include __DIR__ . '/../includes/header.php';
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content-area {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/* When profile card is hidden, make content full width */
+.main-content-area.full-width {
+    margin-left: 0 !important;
+    width: 100% !important;
 }
 </style>
 
@@ -143,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (jobTypeValue) params.append('job_type', jobTypeValue);
 
         // Make AJAX request
-        fetch('/?' + params.toString())
+        fetch('/job-finder/public/index.php?' + params.toString())
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.status);
@@ -152,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.html) {
-                    // Replace the jobs list content
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = data.html;
                     const newJobsList = tempDiv.querySelector('#jobs-list');
@@ -190,14 +223,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Debounced search on input
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(performSearch, 300); // 300ms debounce
+        searchTimeout = setTimeout(performSearch, 300);
     });
 
     // Immediate search on select changes
     industrySelect.addEventListener('change', performSearch);
     jobTypeSelect.addEventListener('change', performSearch);
 
-    // Search on button click (fallback)
+    // Search on button click
     searchBtn.addEventListener('click', function(e) {
         e.preventDefault();
         performSearch();

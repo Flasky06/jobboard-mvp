@@ -37,7 +37,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <div class="flex flex-col md:flex-row items-start gap-6">
             <?php if (!empty($company['company_logo'])): ?>
-            <img src="<?php echo htmlspecialchars($company['company_logo']); ?>" alt="Company Logo"
+            <img src="/job-finder<?php echo htmlspecialchars($company['company_logo']); ?>" alt="Company Logo"
                 class="w-24 h-24 rounded-lg object-cover border-4 border-gray-200">
             <?php endif; ?>
 

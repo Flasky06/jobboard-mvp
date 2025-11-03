@@ -6,7 +6,7 @@ require_once __DIR__ . '/../helpers/session.php';
 $userRole = $_SESSION['role'] ?? null;
 
 // Get profile image path
-$profile_image = '/assets/logo/lss_logo.png';
+$profile_image = '/job-finder/public/assets/logo/lss_logo.png';
 if (isset($_SESSION['user_id']) && $userRole) {
     try {
         require_once __DIR__ . '/../models/User.php';
@@ -15,13 +15,13 @@ if (isset($_SESSION['user_id']) && $userRole) {
         if ($profile) {
             switch ($userRole) {
                 case 'jobseeker':
-                    $profile_image = !empty($profile['profile_picture']) ? $profile['profile_picture'] : '/uploads/profile_photos/default-avatar.png';
+                    $profile_image = !empty($profile['profile_picture']) ? '/job-finder' . $profile['profile_picture'] : '/job-finder/uploads/profile_photos/default-avatar.png';
                     break;
                 case 'employer':
-                    $profile_image = !empty($profile['company_logo']) ? $profile['company_logo'] : '/uploads/company_logos/default-logo.png';
+                    $profile_image = !empty($profile['company_logo']) ? '/job-finder' . $profile['company_logo'] : '/job-finder/uploads/company_logos/default-logo.png';
                     break;
                 case 'admin':
-                    $profile_image = !empty($profile['admin_photo']) ? $profile['admin_photo'] : '/uploads/profile_photos/default-avatar.png';
+                    $profile_image = !empty($profile['admin_photo']) ? '/job-finder' . $profile['admin_photo'] : '/job-finder/uploads/profile_photos/default-avatar.png';
                     break;
             }
         }
@@ -41,22 +41,19 @@ if (isset($_SESSION['user_id']) && $userRole) {
     <title><?php echo $title ?? 'LSS Systems'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- TinyMCE CDN -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script src="/js/tinymce-config.js"></script>
-    <script src="/js/navbar.js"></script>
+    <script src="/job-finder/public/js/navbar.js" defer></script>
 </head>
 
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow mb-6">
+    <nav class="bg-white shadow mb-2 fixed top-0 left-0 right-0 z-50">
         <div class="container mx-auto px-4">
             <!-- Desktop & Mobile Header -->
             <div class="flex justify-between items-center py-4">
                 <!-- Logo/Brand -->
-                <a href="<?php echo $userRole ? ($userRole === 'jobseeker' ? '//' : ($userRole === 'employer' ? '/dashboard/employer-dashboard.php' : '/dashboard/admin-dashboard.php')) : '//'; ?>"
+                <a href="<?php echo $userRole ? ($userRole === 'jobseeker' ? '/job-finder/public/' : ($userRole === 'employer' ? '/job-finder/public/dashboard/employer-dashboard' : '/job-finder/public/dashboard/admin-dashboard')) : '/job-finder/public/'; ?>"
                     class="font-bold text-lg text-blue-700 flex-shrink-0 flex items-center">
-                    <img src="/assets/logo/Iss_logo.png" alt="LSS Systems Logo" class="h-8 w-8 mr-2">
+                    <img src="/job-finder/public/assets/logo/Iss_logo.png" alt="LSS Systems Logo" class="h-8 w-8 mr-2">
                     LSS
                     Systems<?php echo $userRole === 'admin' ? ' - Admin' : ($userRole === 'employer' ? ' - Employer' : ''); ?>
                 </a>
@@ -64,20 +61,24 @@ if (isset($_SESSION['user_id']) && $userRole) {
                 <!-- Desktop Navigation (hidden on mobile/tablet) -->
                 <div class="hidden md:flex items-center space-x-6">
                     <?php if ($userRole === 'jobseeker'): ?>
-                    <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
-                    <a href="/jobs/saved-jobs.php" class="hover:text-blue-600 transition-colors">Saved Jobs</a>
-                    <a href="/companies.php" class="hover:text-blue-600 transition-colors">Companies</a>
-                    <a href="/profile.php" class="hover:text-blue-600 transition-colors">Profile</a>
+                    <a href="/job-finder/public/" class="hover:text-blue-600 transition-colors">Home</a>
+                    <a href="/job-finder/public/jobs/saved-jobs" class="hover:text-blue-600 transition-colors">Saved
+                        Jobs</a>
+                    <a href="/job-finder/public/companies" class="hover:text-blue-600 transition-colors">Companies</a>
+                    <a href="/job-finder/public/profile" class="hover:text-blue-600 transition-colors">Profile</a>
                     <?php elseif ($userRole === 'employer'): ?>
-                    <a href="/dashboard/employer-dashboard.php"
+                    <a href="/job-finder/public/dashboard/employer-dashboard"
                         class="hover:text-blue-600 transition-colors">Dashboard</a>
-                    <a href="/applications/applications.php"
+                    <a href="/job-finder/public/applications/applications"
                         class="hover:text-blue-600 transition-colors">Applications</a>
-                    <a href="/jobs/my-jobs.php" class="hover:text-blue-600 transition-colors">My Jobs</a>
-                    <a href="/jobs/post-job.php" class="hover:text-blue-600 transition-colors">Post Job</a>
+                    <a href="/job-finder/public/jobs/my-jobs" class="hover:text-blue-600 transition-colors">My Jobs</a>
+                    <a href="/job-finder/public/jobs/post-job" class="hover:text-blue-600 transition-colors">Post
+                        Job</a>
                     <?php elseif ($userRole === 'admin'): ?>
-                    <a href="dashboard/admin-dashboard.php" class="hover:text-blue-600 transition-colors">Dashboard</a>
-                    <a href="dashboard/admin-profile.php" class="hover:text-blue-600 transition-colors">Profile</a>
+                    <a href="/job-finder/public/dashboard/admin-dashboard"
+                        class="hover:text-blue-600 transition-colors">Dashboard</a>
+                    <a href="/job-finder/public/dashboard/admin-profile"
+                        class="hover:text-blue-600 transition-colors">Profile</a>
                     <?php endif; ?>
 
                     <?php if ($userRole): ?>
@@ -87,7 +88,7 @@ if (isset($_SESSION['user_id']) && $userRole) {
                             class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                             <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile"
                                 class="w-8 h-8 rounded-full object-cover border-2 border-gray-300"
-                                onerror="this.src='/uploads/profile_photos/default-avatar.png'">
+                                onerror="this.src='/job-finder/public/uploads/profile_photos/default-avatar.png'">
                             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 9l-7 7-7-7"></path>
@@ -96,7 +97,7 @@ if (isset($_SESSION['user_id']) && $userRole) {
                         <div id="profileDropdown"
                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
                             <div class="py-1">
-                                <a href="<?php echo $userRole === 'jobseeker' ? '/profile.php' : ($userRole === 'employer' ? '/dashboard/employer-profile.php' : '/dashboard/admin-profile.php'); ?>"
+                                <a href="<?php echo $userRole === 'jobseeker' ? '/job-finder/public/profile' : ($userRole === 'employer' ? '/job-finder/public/dashboard/employer-profile' : '/job-finder/public/dashboard/admin-profile'); ?>"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -106,7 +107,7 @@ if (isset($_SESSION['user_id']) && $userRole) {
                                     </svg>
                                     <?php echo $userRole === 'employer' ? 'Company Profile' : 'Profile'; ?>
                                 </a>
-                                <a href="/auth/logout.php"
+                                <a href="/job-finder/public/auth/logout.php"
                                     class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                                     <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -121,8 +122,8 @@ if (isset($_SESSION['user_id']) && $userRole) {
                     </div>
                     <?php else: ?>
                     <!-- Guest Links (Desktop) -->
-                    <a href="auth/login.php" class="hover:text-blue-600 transition-colors">Login</a>
-                    <a href="auth/register.php"
+                    <a href="/job-finder/public/auth/login" class="hover:text-blue-600 transition-colors">Login</a>
+                    <a href="/job-finder/public/auth/register"
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Register</a>
                     <?php endif; ?>
                 </div>
@@ -142,74 +143,74 @@ if (isset($_SESSION['user_id']) && $userRole) {
             <div id="mobileMenu" class="md:hidden hidden border-t border-gray-200">
                 <div class="px-2 py-3 space-y-1">
                     <?php if ($userRole === 'jobseeker'): ?>
-                    <a href="/"
+                    <a href="/job-finder/public/"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-home w-5 inline-block"></i> Home
                     </a>
-                    <a href="/jobs/saved-jobs.php"
+                    <a href="/job-finder/public/jobs/saved-jobs"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-bookmark w-5 inline-block"></i> Saved Jobs
                     </a>
-                    <a href="/companies.php"
+                    <a href="/job-finder/public/companies"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-building w-5 inline-block"></i> Companies
                     </a>
-                    <a href="/profile.php"
+                    <a href="/job-finder/public/profile"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-user w-5 inline-block"></i> Profile
                     </a>
                     <hr class="my-2 border-gray-200">
-                    <a href="/auth/logout.php"
+                    <a href="/job-finder/public/auth/logout.php"
                         class="block px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors">
                         <i class="fas fa-sign-out-alt w-5 inline-block"></i> Logout
                     </a>
                     <?php elseif ($userRole === 'employer'): ?>
-                    <a href="/dashboard/employer-dashboard.php"
+                    <a href="/job-finder/public/dashboard/employer-dashboard"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-tachometer-alt w-5 inline-block"></i> Dashboard
                     </a>
-                    <a href="/applications/applications.php"
+                    <a href="/job-finder/public/applications/applications"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-file-alt w-5 inline-block"></i> Applications
                     </a>
-                    <a href="/jobs/my-jobs.php"
+                    <a href="/job-finder/public/jobs/my-jobs"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-briefcase w-5 inline-block"></i> My Jobs
                     </a>
-                    <a href="/jobs/post-job.php"
+                    <a href="/job-finder/public/jobs/post-job"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-plus-circle w-5 inline-block"></i> Post Job
                     </a>
-                    <a href="/dashboard/employer-profile.php"
+                    <a href="/job-finder/public/dashboard/employer-profile"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-building w-5 inline-block"></i> Company Profile
                     </a>
                     <hr class="my-2 border-gray-200">
-                    <a href="/auth/logout.php"
+                    <a href="/job-finder/public/auth/logout.php"
                         class="block px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors">
                         <i class="fas fa-sign-out-alt w-5 inline-block"></i> Logout
                     </a>
                     <?php elseif ($userRole === 'admin'): ?>
-                    <a href="dashboard/admin-dashboard.php"
+                    <a href="/job-finder/public/dashboard/admin-dashboard"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-tachometer-alt w-5 inline-block"></i> Dashboard
                     </a>
-                    <a href="dashboard/admin-profile.php"
+                    <a href="/job-finder/public/dashboard/admin-profile"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-user-shield w-5 inline-block"></i> Profile
                     </a>
                     <hr class="my-2 border-gray-200">
-                    <a href="/auth/logout.php"
+                    <a href="/job-finder/public/auth/logout.php"
                         class="block px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors">
                         <i class="fas fa-sign-out-alt w-5 inline-block"></i> Logout
                     </a>
                     <?php else: ?>
                     <!-- Guest Mobile Menu -->
-                    <a href="auth/login.php"
+                    <a href="/job-finder/public/auth/login"
                         class="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
                         <i class="fas fa-sign-in-alt w-5 inline-block"></i> Login
                     </a>
-                    <a href="auth/register.php"
+                    <a href="/job-finder/public/auth/register"
                         class="block px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-center font-medium">
                         <i class="fas fa-user-plus w-5 inline-block"></i> Register
                     </a>
@@ -218,6 +219,9 @@ if (isset($_SESSION['user_id']) && $userRole) {
             </div>
         </div>
     </nav>
+
+    <!-- Job Seeker Profile Card Sidebar -->
+    <?php include __DIR__ . '/job_seeker_profile_card.php'; ?>
 
     <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -264,4 +268,4 @@ if (isset($_SESSION['user_id']) && $userRole) {
         }
     });
     </script>
-    <main class="container mx-auto p-4">
+    <main class="container mx-auto p-4 pt-20">

@@ -23,7 +23,7 @@ include __DIR__ . '/../../includes/header.php';
     <!-- Company Logo Header -->
     <?php if (!empty($profile['company_logo'])): ?>
     <div class="bg-white rounded-lg shadow-md p-6 mb-6 text-center">
-        <img src="<?php echo htmlspecialchars($profile['company_logo']); ?>" alt="Company Logo"
+        <img src="/job-finder<?php echo htmlspecialchars($profile['company_logo']); ?>" alt="Company Logo"
             class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200">
         <h1 class="text-2xl font-bold text-gray-800">
             <?php echo htmlspecialchars($profile['company_name'] ?? 'Company Name'); ?></h1>
@@ -31,8 +31,6 @@ include __DIR__ . '/../../includes/header.php';
     <?php endif; ?>
 
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-4">Employer Profile</h1>
-        <p class="text-gray-600 mb-6">Manage your company profile information.</p>
 
         <?php if (isset($_SESSION['success'])): ?>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
@@ -113,7 +111,7 @@ include __DIR__ . '/../../includes/header.php';
                 <div>
                     <label class="block text-gray-700 mb-2">Company Logo</label>
                     <?php if (!empty($profile['company_logo'])): ?>
-                    <img src="<?php echo htmlspecialchars($profile['company_logo']); ?>" alt="Company Logo"
+                    <img src="/job-finder<?php echo htmlspecialchars($profile['company_logo']); ?>" alt="Company Logo"
                         class="w-20 h-20 rounded-full object-cover">
                     <?php else: ?>
                     <p class="text-gray-900">No logo uploaded</p>

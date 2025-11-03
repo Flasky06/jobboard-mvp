@@ -24,36 +24,43 @@ $title = "Companies - Browse All Employers";
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+<!-- Main Container with 30/60 Split Layout -->
+<div class="flex">
+    <!-- Left Sidebar - Profile Card (30%) -->
+    <?php include __DIR__ . '/../includes/job_seeker_profile_card.php'; ?>
 
-    <!-- Search Section -->
-    <div class="bg-gray-50 p-6 rounded-lg mb-8">
-        <div class="max-w-md">
-            <label for="search-input" class="block text-sm font-medium text-gray-700 mb-2">Search Companies</label>
-            <input type="text" id="search-input" value="<?php echo htmlspecialchars($search); ?>"
-                placeholder="Company name, industry, or location..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <!-- Right Content Area (75%) -->
+    <div class="main-content-area lg:ml-[25%] lg:w-[75%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-2">
+
+        <!-- Search Section -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-8">
+            <div class="max-w-md">
+                <label for="search-input" class="block text-sm font-medium text-gray-700 mb-2">Search Companies</label>
+                <input type="text" id="search-input" value="<?php echo htmlspecialchars($search); ?>"
+                    placeholder="Company name, industry, or location..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
         </div>
-    </div>
 
-    <?php if (isset($_SESSION['success'])): ?>
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-        <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
-    </div>
-    <?php endif; ?>
+        <?php if (isset($_SESSION['success'])): ?>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
+        </div>
+        <?php endif; ?>
 
-    <?php if (isset($_SESSION['errors'])): ?>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-        <ul class="list-disc list-inside">
-            <?php foreach ($_SESSION['errors'] as $error): ?>
-            <li><?php echo htmlspecialchars($error); ?></li>
-            <?php endforeach; ?>
-        </ul>
-        <?php unset($_SESSION['errors']); ?>
-    </div>
-    <?php endif; ?>
+        <?php if (isset($_SESSION['errors'])): ?>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <ul class="list-disc list-inside">
+                <?php foreach ($_SESSION['errors'] as $error): ?>
+                <li><?php echo htmlspecialchars($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <?php unset($_SESSION['errors']); ?>
+        </div>
+        <?php endif; ?>
 
-    <?php include 'companies_partial.php'; ?>
+        <?php include 'companies_partial.php'; ?>
+    </div>
 </div>
 
 <style>
@@ -62,6 +69,14 @@ include __DIR__ . '/../includes/header.php';
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content-area {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
 }
 </style>
 
@@ -126,7 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Server error:', data.error);
                     if (companiesList) {
                         companiesList.innerHTML =
-                            '<div class="text-center py-8"><div class="text-red-500">Error: ' + data.error +
+                            '<div class="text-center py-8"><div class="text-red-500">Error: ' + data
+                            .error +
                             '</div></div>';
                     }
                 }
