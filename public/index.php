@@ -46,7 +46,7 @@ include __DIR__ . '/../includes/header.php';
 
     <!-- Right Content Area (60%) -->
     <div
-        class="main-content-area <?php echo $showProfileCard ? 'lg:ml-[30%] lg:w-[60%]' : 'full-width'; ?> w-full mx-auto">
+        class="main-content-area <?php echo $showProfileCard ? 'lg:ml-[30%] lg:w-[98%]' : 'full-width'; ?> w-full mx-auto">
 
         <!-- Search and Filter Section -->
         <div class="bg-gray-50 p-6 rounded-lg mb-8">
