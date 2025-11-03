@@ -15,13 +15,13 @@ if (isset($_SESSION['user_id']) && $userRole) {
         if ($profile) {
             switch ($userRole) {
                 case 'jobseeker':
-                    $profile_image = !empty($profile['profile_picture']) ? '/job-finder' . $profile['profile_picture'] : '/job-finder/uploads/profile_photos/default-avatar.png';
+                    $profile_image = !empty($profile['profile_picture']) ? '/job-finder/uploads/profile_photos/' . $profile['profile_picture'] : '/job-finder/uploads/profile_photos/default-avatar.png';
                     break;
                 case 'employer':
-                    $profile_image = !empty($profile['company_logo']) ? '/job-finder' . $profile['company_logo'] : '/job-finder/uploads/company_logos/default-logo.png';
+                    $profile_image = !empty($profile['company_logo']) ? '/job-finder/uploads/company_logos/' . $profile['company_logo'] : '/job-finder/uploads/company_logos/default-logo.png';
                     break;
                 case 'admin':
-                    $profile_image = !empty($profile['admin_photo']) ? '/job-finder' . $profile['admin_photo'] : '/job-finder/uploads/profile_photos/default-avatar.png';
+                    $profile_image = !empty($profile['admin_photo']) ? '/job-finder/uploads/profile_photos/' . $profile['admin_photo'] : '/job-finder/uploads/profile_photos/default-avatar.png';
                     break;
             }
         }
@@ -88,7 +88,7 @@ if (isset($_SESSION['user_id']) && $userRole) {
                             class="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                             <img src="<?php echo htmlspecialchars($profile_image); ?>" alt="Profile"
                                 class="w-8 h-8 rounded-full object-cover border-2 border-gray-300"
-                                onerror="this.src='/job-finder/public/uploads/profile_photos/default-avatar.png'">
+                                onerror="this.src='/job-finder/uploads/profile_photos/default-avatar.png'">
                             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 9l-7 7-7-7"></path>

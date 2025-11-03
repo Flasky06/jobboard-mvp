@@ -119,7 +119,7 @@ include __DIR__ . '/../../includes/header.php';
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
                             <?php if (!empty($employer['company_logo'])): ?>
-                            <img src="/job-finder<?php echo htmlspecialchars($employer['company_logo']); ?>"
+                            <img src="/job-finder/uploads/company_logos/<?php echo htmlspecialchars($employer['company_logo']); ?>"
                                 alt="Company Logo" class="w-12 h-12 rounded-full border border-gray-400 object-cover">
                             <?php else: ?>
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">

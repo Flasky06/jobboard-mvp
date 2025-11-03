@@ -34,7 +34,7 @@ $companyLogo = $userProfile['company_logo'] ?? '';
 
 // Company logo path
 $logoPath = !empty($companyLogo) && file_exists(__DIR__ . '/../uploads/company_logos/' . $companyLogo)
-    ? '/job-finder' . $companyLogo
+    ? '/job-finder/uploads/company_logos/' . $companyLogo
     : '/job-finder/uploads/company_logos/default-logo.png';
 
 // Get job statistics

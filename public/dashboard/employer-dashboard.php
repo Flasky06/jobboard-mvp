@@ -143,19 +143,19 @@ include __DIR__ . '/../../includes/job_seeker_profile_card.php';
             <div class="bg-white rounded-xl shadow-md p-6">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
                 <div class="space-y-3">
-                    <a href="/jobs/post-job.php"
+                    <a href="/job-finder/public/jobs/post-job"
                         class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg text-center font-semibold">
                         Post New Job
                     </a>
-                    <a href="/index.php"
+                    <a href="/job-finder/public/jobs/my-jobs"
                         class="block w-full bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-lg hover:border-blue-500 hover:text-blue-600 transition-all duration-200 text-center font-semibold">
                         Manage Jobs
                     </a>
-                    <a href="/applications/applications.php"
+                    <a href="/job-finder/public/applications/applications"
                         class="block w-full bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-lg hover:border-green-500 hover:text-green-600 transition-all duration-200 text-center font-semibold">
                         View Applications
                     </a>
-                    <a href="/dashboard/employer-profile.php"
+                    <a href="/job-finder/public/dashboard/employer-profile"
                         class="block w-full bg-white border-2 border-gray-300 text-gray-700 px-6 py-4 rounded-lg hover:border-purple-500 hover:text-purple-600 transition-all duration-200 text-center font-semibold">
                         Update Profile
                     </a>
@@ -168,7 +168,7 @@ include __DIR__ . '/../../includes/job_seeker_profile_card.php';
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-900">Recent Applications</h2>
-                    <a href="/applications/applications.php"
+                    <a href="/job-finder/public/applications/applications"
                         class="text-blue-600 hover:text-blue-700 font-medium text-sm">
                         View All →
                     </a>
@@ -247,7 +247,7 @@ include __DIR__ . '/../../includes/job_seeker_profile_card.php';
                                 <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo $statusColor; ?>">
                                     <?php echo ucfirst($app['status']); ?>
                                 </span>
-                                <a href="/applications/application-details.php?id=<?php echo $app['uuid']; ?>"
+                                <a href="/job-finder/public/applications/application-details?id=<?php echo $app['uuid']; ?>"
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                                     View Details
                                 </a>

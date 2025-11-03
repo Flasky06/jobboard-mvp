@@ -39,7 +39,7 @@ if (count($skillsArray) > 5) {
 
 // Profile picture path
 $profilePicPath = !empty($profilePicture) && file_exists(__DIR__ . '/../uploads/profile_photos/' . $profilePicture)
-    ? '/job-finder' . $profilePicture
+    ? '/job-finder/uploads/profile_photos/' . $profilePicture
     : '/job-finder/uploads/profile_photos/default-avatar.png';
 ?>
 

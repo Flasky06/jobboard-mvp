@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Generate unique filename
                     $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
                     $newFileName = uniqid('resume_', true) . '.' . $fileExtension;
-                    $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/job-finder/public/uploads/resumes/' . $newFileName;
+                    $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/job-finder/uploads/resumes/' . $newFileName;
 
                     // Debug logging
                     error_log("Attempting to upload resume to: " . $uploadPath);
