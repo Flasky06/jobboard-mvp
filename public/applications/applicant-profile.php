@@ -37,8 +37,8 @@ include __DIR__ . '/../../includes/header.php';
     <!-- Profile Picture Header -->
     <?php if (!empty($profile['profile_picture'])): ?>
     <div class="bg-white rounded-lg shadow-md p-6 mb-6 text-center">
-        <img src="<?php echo htmlspecialchars($profile['profile_picture']); ?>" alt="Profile Picture"
-            class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200">
+        <img src="/job-finder/uploads/profile_photos/<?php echo htmlspecialchars($profile['profile_picture']); ?>"
+            alt="Profile Picture" class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200">
         <h1 class="text-2xl font-bold text-gray-800">
             <?php echo htmlspecialchars($profile['fullName'] ?? 'Full Name'); ?></h1>
         <p class="text-gray-600"><?php echo htmlspecialchars($profile['professional_title'] ?? 'Professional Title'); ?>
@@ -122,8 +122,8 @@ include __DIR__ . '/../../includes/header.php';
                 <?php if (!empty($profile['profile_picture'])): ?>
                 <div>
                     <label class="block text-gray-700 mb-2">Profile Picture</label>
-                    <img src="<?php echo htmlspecialchars($profile['profile_picture']); ?>" alt="Profile Picture"
-                        class="w-20 h-20 rounded-full object-cover">
+                    <img src="/job-finder/uploads/profile_photos/<?php echo htmlspecialchars($profile['profile_picture']); ?>"
+                        alt="Profile Picture" class="w-20 h-20 rounded-full object-cover">
                 </div>
                 <?php endif; ?>
             </div>

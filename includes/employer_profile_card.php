@@ -34,23 +34,28 @@ $companyLogo = $userProfile['company_logo'] ?? '';
 
 // Company logo path
 $logoPath = !empty($companyLogo) && file_exists(__DIR__ . '/../uploads/company_logos/' . $companyLogo)
-    ? '/job-finder/uploads/company_logos/' . $companyLogo
+    ? '/job-finder' . $companyLogo
     : '/job-finder/uploads/company_logos/default-logo.png';
 
 // Get job statistics
+$employerUuid = $userProfile['employer_uuid'] ?? null;
 try {
-    $stmt = $conn->prepare("
-        SELECT
-            COUNT(*) as total_jobs,
-            SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as active_jobs,
-            (SELECT COUNT(*) FROM applications a JOIN job_posts jp ON a.job_uuid = jp.uuid WHERE jp.employer_uuid = ?) as total_applications
-        FROM job_posts WHERE employer_uuid = ?
-    ");
-    if ($stmt) {
-        $stmt->bind_param("ss", $_SESSION['user_id'], $_SESSION['user_id']);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $stats = $result->fetch_assoc();
+    if ($employerUuid) {
+        $stmt = $conn->prepare("
+            SELECT
+                COUNT(*) as total_jobs,
+                SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as active_jobs,
+                (SELECT COUNT(*) FROM applications a JOIN job_posts jp ON a.job_uuid = jp.uuid WHERE jp.employer_uuid = ?) as total_applications
+            FROM job_posts WHERE employer_uuid = ?
+        ");
+        if ($stmt) {
+            $stmt->bind_param("ss", $employerUuid, $employerUuid);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stats = $result->fetch_assoc();
+        } else {
+            $stats = ['total_jobs' => 0, 'active_jobs' => 0, 'total_applications' => 0];
+        }
     } else {
         $stats = ['total_jobs' => 0, 'active_jobs' => 0, 'total_applications' => 0];
     }

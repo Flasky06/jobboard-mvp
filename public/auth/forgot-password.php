@@ -1,13 +1,13 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../controllers/AuthController.php';
-require_once __DIR__ . '/../helpers/session.php';
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../controllers/AuthController.php';
+require_once __DIR__ . '/../../helpers/session.php';
 
 $auth = new AuthController($conn);
 $auth->forgotPassword();
 
 $title = "Forgot Password";
-include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
@@ -54,9 +54,9 @@ include __DIR__ . '/../includes/header.php';
 
     <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
-            Remember your password? <a href="auth/login.php" class="text-blue-600 hover:text-blue-500">Login here</a>
+            Remember your password? <a href="login.php" class="text-blue-600 hover:text-blue-500">Login here</a>
         </p>
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include __DIR__ . '/../../includes/footer.php'; ?>

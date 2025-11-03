@@ -23,7 +23,6 @@ include __DIR__ . '/../../includes/header.php';
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">My Posted Jobs</h1>
-                    <p class="text-gray-600">Manage and track all your job postings</p>
                 </div>
                 <a href="/jobs/post-job.php"
                     class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center">

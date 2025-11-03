@@ -36,8 +36,8 @@ if (!isset($employers) && isset($_GET['ajax'])) {
         <div class="p-6">
             <div class="flex items-start gap-4 mb-4">
                 <?php if (!empty($employer['company_logo'])): ?>
-                <img src="/job-finder<?php echo htmlspecialchars($employer['company_logo']); ?>" alt="Company Logo"
-                    class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 flex-shrink-0">
+                <img src="/job-finder/uploads/company_logos/<?php echo htmlspecialchars($employer['company_logo']); ?>"
+                    alt="Company Logo" class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 flex-shrink-0">
                 <?php endif; ?>
 
                 <div class="flex-1 min-w-0">

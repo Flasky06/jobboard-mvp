@@ -51,11 +51,10 @@ if (empty($application['resume_file'])) {
 $resumePath = $application['resume_file'];
 
 // Convert relative path to absolute file path
-// Database stores /uploads/resumes/filename.pdf
-// Convert to absolute path: C:\xampp\htdocs\job-finder\uploads\resumes\filename.pdf
-// Since DOCUMENT_ROOT might not be set in CLI, use relative path from project root
-$projectRoot = __DIR__ . '/../../'; // public/applications/ -> job-finder/
-$filePath = realpath($projectRoot . ltrim($resumePath, '/'));
+// Database stores uploads/resumes/filename.pdf (relative to public/)
+// Convert to absolute path: C:\xampp\htdocs\job-finder\public\uploads\resumes\filename.pdf
+$projectRoot = __DIR__ . '/../'; // public/applications/ -> public/
+$filePath = realpath($projectRoot . $resumePath);
 
 if (!file_exists($filePath)) {
     error_log("File not found: " . $filePath . " (from resume_path: " . $resumePath . ")");
